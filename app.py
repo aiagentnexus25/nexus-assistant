@@ -1,3 +1,6 @@
+import streamlit as st
+from openai import OpenAI
+import importlib.metadata
 import pandas as pd
 from datetime import datetime
 import plotly.express as px
@@ -5,9 +8,6 @@ import os
 import re
 import docx
 from io import BytesIO
-import streamlit as st
-from openai import OpenAI
-import importlib.metadata
 
 # Configuração da página
 st.set_page_config(
