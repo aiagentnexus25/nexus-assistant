@@ -421,7 +421,7 @@ if 'current_feature' in st.session_state and st.session_state.current_feature:
                 
                 with col2:
                     if st.button("👎 Não, preciso de melhoria"):
-                        st.markdown('<p class="feedback-bad">Lamentamos que não tenha atendido suas expectativas. Por favor, forneça detalhes no campo de feedback na barra lateral para podermos melhorar.</p>', unsafe_allow_html=True)() - st.session_state.last_request_time < RATE_LIMIT_SECONDS and st.session_state.request_count > 0:
+                        st.markdown('<p class="feedback-bad">Lamentamos que não tenha atendido suas expectativas. Por favor, forneça detalhes no campo de feedback na barra lateral para podermos melhorar.</p>', unsafe_allow_html=True)_state.last_request_time < RATE_LIMIT_SECONDS and st.session_state.request_count > 0:
         wait_time = round(RATE_LIMIT_SECONDS - (time.time() - st.session_state.last_request_time))
         st.warning(f"Por favor, aguarde {wait_time} segundos antes de fazer outra requisição.")
     else:
@@ -634,4 +634,4 @@ if 'current_feature' in st.session_state and st.session_state.current_feature:
                 st.error(f"Você atingiu o limite de {TOKEN_LIMIT} tokens para esta sessão. Por favor, tente novamente mais tarde.")
             elif st.session_state.request_count >= REQUEST_LIMIT:
                 st.error(f"Você atingiu o limite de {REQUEST_LIMIT} requisições para esta sessão. Por favor, tente novamente mais tarde.")
-            elif time.time
+            elif time.time() - st.session
