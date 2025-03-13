@@ -2,30 +2,7 @@
 
 NEXUS é um assistente de IA especializado em comunicação de projetos, projetado para ajudar gerentes de projetos, líderes de equipe e outros profissionais a comunicar-se de forma clara, eficaz e profissional.
 
-## Exemplo concreto
-
-Um gerente de projetos precisa comunicar um atraso de três dias a um cliente importante. Ele:
-1. Acessa o NEXUS
-2. Seleciona "Gerador de Comunicações"
-3. Escolhe o tipo "E-mail"
-4. Preenche:
-   * Contexto: "Projeto de desenvolvimento do aplicativo mobile, fase de testes"
-   * Público: "Cliente, diretor de marketing da empresa XYZ"
-   * Pontos-chave: "Atraso de 3 dias devido a bugs na integração com API de pagamentos; Plano de recuperação com recursos adicionais; Impacto mínimo no prazo final"
-5. Clica em "Gerar Comunicação"
-6. Recebe um e-mail profissional, equilibrado, que comunica o problema de forma transparente mas construtiva, preservando a relação com o cliente
-
-## Implantação
-
-Este projeto pode ser facilmente implantado no Streamlit Community Cloud ou no Hugging Face Spaces. Consulte a documentação para instruções detalhadas de implantação.
-
-## Licença
-
-Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
-
-## Créditos
-
-Desenvolvido por [Ricardo Brigante] com Streamlit e OpenAI. Funcionalidades Principais
+## Funcionalidades Principais
 
 ### 1. Gerador de Comunicações Estruturadas
 * **Gera e-mails profissionais**: Transforma pontos-chave em e-mails bem estruturados para equipes, clientes e stakeholders
@@ -56,7 +33,7 @@ Desenvolvido por [Ricardo Brigante] com Streamlit e OpenAI. Funcionalidades Prin
 
 - Python 3.8 ou superior
 - Streamlit
-- OpenAI API key
+- Chave API da OpenAI (formatos sk-proj-, sk-svca- ou sk-)
 - Outras dependências listadas em requirements.txt
 
 ## Instalação
@@ -80,7 +57,7 @@ streamlit run app.py
 ## Uso
 
 1. Acesse a aplicação em seu navegador (geralmente em http://localhost:8501)
-2. Configure sua chave de API da OpenAI na barra lateral
+2. Insira sua chave API da OpenAI na barra lateral
 3. Selecione a funcionalidade desejada
 4. Preencha os campos específicos para sua necessidade
 5. Clique no botão "Gerar" para criar o conteúdo
@@ -91,7 +68,44 @@ streamlit run app.py
 1. **Interface simples**: O usuário acessa o aplicativo através de uma interface web criada com Streamlit
 2. **Seleção de função**: Escolhe qual das cinco funcionalidades principais deseja utilizar
 3. **Entrada de informações**: Preenche campos específicos para cada função (contexto, público-alvo, pontos-chave, etc.)
-4. **Processamento pela IA**: O modelo de IA (OpenAI) processa as informações e gera o conteúdo solicitado
+4. **Processamento pela IA**: O aplicativo faz uma chamada à API da OpenAI para gerar o conteúdo personalizado
 5. **Resultado e download**: O usuário recebe o texto formatado e pode baixá-lo ou copiá-lo
 
-##
+## Exemplo concreto
+
+Um gerente de projetos precisa comunicar um atraso de três dias a um cliente importante. Ele:
+1. Acessa o NEXUS
+2. Seleciona "Gerador de Comunicações"
+3. Escolhe o tipo "E-mail"
+4. Preenche:
+   * Contexto: "Projeto de desenvolvimento do aplicativo mobile, fase de testes"
+   * Público: "Cliente, diretor de marketing da empresa XYZ"
+   * Pontos-chave: "Atraso de 3 dias devido a bugs na integração com API de pagamentos; Plano de recuperação com recursos adicionais; Impacto mínimo no prazo final"
+5. Clica em "Gerar Comunicação"
+6. Recebe um e-mail profissional, equilibrado, que comunica o problema de forma transparente mas construtiva, preservando a relação com o cliente
+
+## Notas sobre limites de uso
+
+Para controlar custos e garantir disponibilidade para todos os usuários, o NEXUS inclui:
+- Limite de solicitações por sessão
+- Limite de tokens utilizados por sessão
+- Rastreamento de uso para transparência
+
+## Implantação
+
+Este projeto pode ser facilmente implantado no Streamlit Community Cloud:
+
+1. Faça fork deste repositório no GitHub
+2. Acesse [share.streamlit.io](https://share.streamlit.io)
+3. Configure um novo aplicativo usando o repositório
+4. Adicione sua API key como segredo nas configurações avançadas
+5. Implante e compartilhe com sua equipe
+
+## Licença
+
+Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
+
+## Créditos
+
+Desenvolvido com Streamlit e API da OpenAI.
+Elaborado por [Ricardo Brigante]
