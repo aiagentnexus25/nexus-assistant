@@ -1,5 +1,6 @@
 import streamlit as st
-from openai import OpenAI
+import requests
+import json
 import pandas as pd
 from datetime import datetime
 import plotly.express as px
@@ -67,16 +68,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Inicialização da sessão
-if 'client' not in st.session_state:
-    st.session_state.client = None
-if 'usage_data' not in st.session_state:
-    st.session_state.usage_data = []
 if 'api_key_configured' not in st.session_state:
     st.session_state.api_key_configured = False
+if 'usage_data' not in st.session_state:
+    st.session_state.usage_data = []
 if 'generated_content' not in st.session_state:
     st.session_state.generated_content = ""
 if 'history' not in st.session_state:
     st.session_state.history = []
+if 'token_count' not in st.session_state:
+    st.session_state.token_count = 0
+if 'request_count' not in st.session_state:
+    st.session_state.request_count = 0
+
+# Limites de uso para proteger contra custos excessivos
+TOKEN_LIMIT = 10000  # Limite total de tokens por sessão
+REQUEST_LIMIT = 20   # Limite de solicitações por sessão
 
 # Sidebar para configuração
 with st.sidebar:
@@ -85,17 +92,18 @@ with st.sidebar:
     st.markdown("## Configurações")
     
     # API Key Input
-    api_key = st.text_input("OpenAI API Key", type="password", value=st.secrets.get("NEXUS_AI_Agent", ""), help="Insira sua chave de API da OpenAI")
+    api_key = st.text_input("OpenAI API Key", type="password", 
+                          help="Insira sua chave de API da OpenAI (formatos sk-proj- e sk-svca- são suportados)")
     
-   # Na parte onde você configura o cliente OpenAI
-if api_key:
-    try:
-        st.session_state.client = OpenAI(api_key=api_key)
-        if not st.session_state.api_key_configured:
-            st.session_state.api_key_configured = True
-            st.success("API configurada com sucesso!")
-    except Exception as e:
-        st.error(f"Erro ao configurar a API: {str(e)}")
+    # Verificar API Key
+    if api_key:
+        if api_key.startswith(("sk-", "sk-proj-", "sk-svca-")):
+            st.session_state.api_key = api_key
+            if not st.session_state.api_key_configured:
+                st.session_state.api_key_configured = True
+                st.success("API configurada com sucesso!")
+        else:
+            st.error("Formato de API key inválido. Deve começar com 'sk-', 'sk-proj-' ou 'sk-svca-'")
     
     # Configurações do modelo
     st.markdown("### Modelo e Parâmetros")
@@ -128,6 +136,14 @@ if api_key:
                         title='Uso por Funcionalidade',
                         color='Funcionalidade')
             st.plotly_chart(fig, use_container_width=True)
+        
+        # Mostrar limites
+        st.markdown("### Limites de Uso")
+        st.progress(st.session_state.token_count / TOKEN_LIMIT)
+        st.caption(f"Tokens: {st.session_state.token_count}/{TOKEN_LIMIT}")
+        
+        st.progress(st.session_state.request_count / REQUEST_LIMIT)
+        st.caption(f"Requisições: {st.session_state.request_count}/{REQUEST_LIMIT}")
     
     # Feedback
     st.markdown("### Feedback")
@@ -139,41 +155,80 @@ if api_key:
     
     st.markdown("</div>", unsafe_allow_html=True)
 
-# Função para gerar conteúdo via OpenAI
+# Função para gerar conteúdo via API OpenAI
 def generate_content(prompt, model="gpt-3.5-turbo", temperature=0.7):
-    if not st.session_state.client:
+    if not hasattr(st.session_state, 'api_key'):
         return "Por favor, configure sua API key na barra lateral."
+    
+    # Verificar limites
+    if st.session_state.token_count >= TOKEN_LIMIT:
+        return "Limite de tokens excedido para esta sessão. Por favor, tente novamente mais tarde."
+    
+    if st.session_state.request_count >= REQUEST_LIMIT:
+        return "Limite de requisições excedido para esta sessão. Por favor, tente novamente mais tarde."
     
     try:
         with st.spinner("Gerando conteúdo..."):
-            response = st.session_state.client.chat.completions.create(
-                model=model,
-                messages=[{"role": "system", "content": system_prompt}, 
-                          {"role": "user", "content": prompt}],
-                temperature=temperature
+            # Incrementar contador de requisições
+            st.session_state.request_count += 1
+            
+            # Configurar requisição direta à API
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {st.session_state.api_key}"
+            }
+            
+            # Adicionar mensagem do sistema e prompt do usuário
+            payload = {
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": temperature,
+                "max_tokens": 2000
+            }
+            
+            # Fazer a requisição à API
+            response = requests.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers=headers,
+                data=json.dumps(payload),
+                timeout=60
             )
+            
+            # Processar a resposta
+            if response.status_code == 200:
+                result = response.json()
+                content = result['choices'][0]['message']['content']
+                
+                # Atualizar contadores de tokens
+                prompt_tokens = result['usage']['prompt_tokens']
+                completion_tokens = result['usage']['completion_tokens']
+                total_tokens = result['usage']['total_tokens']
+                st.session_state.token_count += total_tokens
+                
+                # Registrar uso
+                st.session_state.usage_data.append({
+                    'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    'feature': current_feature,
+                    'tokens': total_tokens,
+                    'model': model
+                })
+                
+                # Adicionar ao histórico
+                st.session_state.history.append({
+                    'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    'feature': current_feature,
+                    'input': prompt,
+                    'output': content,
+                    'model': model
+                })
+                
+                return content
+            else:
+                return f"Erro na API (Status {response.status_code}): {response.text}"
         
-        result = response.choices[0].message.content
-        
-        # Registrar uso
-        st.session_state.usage_data.append({
-            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'feature': current_feature,
-            'tokens': response.usage.total_tokens,
-            'model': model
-        })
-        
-        # Adicionar ao histórico
-        st.session_state.history.append({
-            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'feature': current_feature,
-            'input': prompt,
-            'output': result,
-            'model': model
-        })
-        
-        return result
-    
     except Exception as e:
         return f"Erro ao gerar conteúdo: {str(e)}"
 
@@ -292,237 +347,243 @@ if 'current_feature' in st.session_state and st.session_state.current_feature:
     
     st.markdown(f"## {feature_details['icon']} {current_feature}")
     
-    # Interface específica da funcionalidade
-    with st.form(key=f"{current_feature}_form"):
-        st.markdown(f"**{feature_details['description']}**")
-        
-        # Campo de subtipo
-        subtype = st.selectbox("Tipo de Comunicação", feature_details['subtypes'])
-        
-        # Campos comuns a todas as funcionalidades
-        context = st.text_area("Contexto do Projeto", 
-                              help="Descreva o projeto, fase atual e informações relevantes",
-                              height=100)
-        
-        # Campos específicos por funcionalidade
-        if current_feature == "Gerador de Comunicações Estruturadas":
-            audience = st.text_input("Público-alvo", 
-                                   help="Para quem esta comunicação será enviada (equipe, cliente, stakeholder)")
-            key_points = st.text_area("Pontos-chave", 
-                                    help="Liste os principais pontos que devem ser incluídos na comunicação",
+    # Verificar limites antes de mostrar a interface
+    if st.session_state.token_count >= TOKEN_LIMIT:
+        st.error(f"Você atingiu o limite de {TOKEN_LIMIT} tokens para esta sessão. Por favor, tente novamente mais tarde.")
+    elif st.session_state.request_count >= REQUEST_LIMIT:
+        st.error(f"Você atingiu o limite de {REQUEST_LIMIT} requisições para esta sessão. Por favor, tente novamente mais tarde.")
+    else:
+        # Interface específica da funcionalidade
+        with st.form(key=f"{current_feature}_form"):
+            st.markdown(f"**{feature_details['description']}**")
+            
+            # Campo de subtipo
+            subtype = st.selectbox("Tipo de Comunicação", feature_details['subtypes'])
+            
+            # Campos comuns a todas as funcionalidades
+            context = st.text_area("Contexto do Projeto", 
+                                help="Descreva o projeto, fase atual e informações relevantes",
+                                height=100)
+            
+            # Campos específicos por funcionalidade
+            if current_feature == "Gerador de Comunicações Estruturadas":
+                audience = st.text_input("Público-alvo", 
+                                    help="Para quem esta comunicação será enviada (equipe, cliente, stakeholder)")
+                key_points = st.text_area("Pontos-chave", 
+                                        help="Liste os principais pontos que devem ser incluídos na comunicação",
+                                        height=150)
+                tone = st.select_slider("Tom da Comunicação", 
+                                    options=["Muito Formal", "Formal", "Neutro", "Amigável", "Casual"],
+                                    value="Neutro")
+                
+                prompt = f"""
+                Gere um {subtype} com base nas seguintes informações:
+                
+                Contexto do Projeto: {context}
+                Público-alvo: {audience}
+                Pontos-chave: {key_points}
+                Tom desejado: {tone}
+                
+                Formate a saída adequadamente para um {subtype}, incluindo assunto/título e estrutura apropriada.
+                """
+                
+            elif current_feature == "Assistente de Reuniões":
+                participants = st.text_area("Participantes", 
+                                        help="Liste os participantes e suas funções",
+                                        height=100)
+                topics = st.text_area("Tópicos a serem abordados", 
+                                    help="Liste os tópicos que precisam ser discutidos",
                                     height=150)
-            tone = st.select_slider("Tom da Comunicação", 
-                                  options=["Muito Formal", "Formal", "Neutro", "Amigável", "Casual"],
-                                  value="Neutro")
-            
-            prompt = f"""
-            Gere um {subtype} com base nas seguintes informações:
-            
-            Contexto do Projeto: {context}
-            Público-alvo: {audience}
-            Pontos-chave: {key_points}
-            Tom desejado: {tone}
-            
-            Formate a saída adequadamente para um {subtype}, incluindo assunto/título e estrutura apropriada.
-            """
-            
-        elif current_feature == "Assistente de Reuniões":
-            participants = st.text_area("Participantes", 
-                                      help="Liste os participantes e suas funções",
-                                      height=100)
-            topics = st.text_area("Tópicos a serem abordados", 
-                                help="Liste os tópicos que precisam ser discutidos",
-                                height=150)
-            duration = st.number_input("Duração (minutos)", min_value=15, max_value=240, value=60, step=15)
-            
-            if subtype == "Agenda de Reunião":
-                prompt = f"""
-                Crie uma agenda detalhada para uma reunião de {duration} minutos com base nas seguintes informações:
+                duration = st.number_input("Duração (minutos)", min_value=15, max_value=240, value=60, step=15)
                 
-                Contexto do Projeto: {context}
-                Participantes: {participants}
-                Tópicos a serem abordados: {topics}
-                
-                Inclua alocação de tempo para cada item, responsáveis e objetivos claros.
-                """
-            elif subtype == "Ata/Resumo de Reunião":
-                decisions = st.text_area("Decisões tomadas", 
-                                       help="Liste as principais decisões tomadas durante a reunião",
-                                       height=100)
-                actions = st.text_area("Ações acordadas", 
-                                     help="Liste as ações acordadas, responsáveis e prazos",
-                                     height=100)
-                
-                prompt = f"""
-                Crie uma ata/resumo detalhado para uma reunião de {duration} minutos com base nas seguintes informações:
-                
-                Contexto do Projeto: {context}
-                Participantes: {participants}
-                Tópicos abordados: {topics}
-                Decisões tomadas: {decisions}
-                Ações acordadas: {actions}
-                
-                Organize por tópicos, destacando claramente decisões e próximos passos com responsáveis.
-                """
-            else:  # Follow-up
-                meeting_outcome = st.text_area("Resultado da reunião", 
-                                             help="Resuma os principais resultados da reunião",
-                                             height=100)
-                action_items = st.text_area("Itens de ação", 
-                                          help="Liste os itens de ação, responsáveis e prazos",
-                                          height=100)
-                
-                prompt = f"""
-                Crie uma mensagem de follow-up para uma reunião com base nas seguintes informações:
-                
-                Contexto do Projeto: {context}
-                Participantes: {participants}
-                Tópicos abordados: {topics}
-                Resultado da reunião: {meeting_outcome}
-                Itens de ação: {action_items}
-                
-                A mensagem deve agradecer a participação, resumir os principais pontos, detalhar próximos passos
-                com responsáveis e prazos, e solicitar confirmação/feedback conforme apropriado.
-                """
-                
-        elif current_feature == "Tradutor de Jargão Técnico":
-            technical_content = st.text_area("Conteúdo Técnico", 
-                                           help="Cole aqui o texto técnico que precisa ser traduzido",
-                                           height=200)
-            audience = st.selectbox("Público-alvo", 
-                                  ["Executivos", "Clientes não-técnicos", "Equipe de Negócios", "Equipe Técnica Junior"])
-            key_concepts = st.text_input("Conceitos-chave a preservar", 
-                                       help="Liste conceitos técnicos que devem ser mantidos mesmo se simplificados")
-            
-            prompt = f"""
-            Traduza/adapte o seguinte conteúdo técnico para um público de {audience} com base nas seguintes informações:
-            
-            Contexto do Projeto: {context}
-            Conteúdo Técnico Original: {technical_content}
-            Conceitos-chave a preservar: {key_concepts}
-            
-            Para {audience}, foque em: 
-            - {'Impacto nos negócios e resultados de alto nível' if audience == 'Executivos' else ''}
-            - {'Benefícios e funcionalidades em linguagem acessível' if audience == 'Clientes não-técnicos' else ''}
-            - {'Conexão com objetivos de negócios e processos' if audience == 'Equipe de Negócios' else ''}
-            - {'Explicações técnicas mais detalhadas, mas com conceitos explicados' if audience == 'Equipe Técnica Junior' else ''}
-            
-            Mantenha a precisão conceitual mesmo simplificando a linguagem.
-            """
-            
-        elif current_feature == "Facilitador de Feedback":
-            situation = st.text_area("Situação", 
-                                   help="Descreva a situação específica para a qual você precisa fornecer feedback",
-                                   height=150)
-            strengths = st.text_area("Pontos Fortes", 
-                                   help="Liste aspectos positivos que devem ser destacados",
-                                   height=100)
-            areas_for_improvement = st.text_area("Áreas para Melhoria", 
-                                               help="Liste aspectos que precisam ser melhorados",
-                                               height=100)
-            relationship = st.selectbox("Relação com o Receptor", 
-                                      ["Membro da equipe direto", "Colega de mesmo nível", "Superior hierárquico", "Cliente", "Fornecedor"])
-            
-            prompt = f"""
-            Estruture um {subtype} construtivo e eficaz com base nas seguintes informações:
-            
-            Contexto do Projeto: {context}
-            Situação específica: {situation}
-            Pontos fortes a destacar: {strengths}
-            Áreas para melhoria: {areas_for_improvement}
-            Relação com o receptor: {relationship}
-            
-            O feedback deve:
-            - Ser específico e baseado em comportamentos observáveis
-            - Equilibrar aspectos positivos e áreas de melhoria
-            - Incluir exemplos concretos
-            - Oferecer sugestões acionáveis
-            - Usar tom apropriado para a relação ({relationship})
-            - Focar em crescimento e desenvolvimento, não em crítica
-            
-            Formate como um roteiro/script que o usuário pode seguir na conversa ou adaptar para uma comunicação escrita.
-            """
-            
-        elif current_feature == "Detector de Riscos de Comunicação":
-            content_to_analyze = st.text_area("Conteúdo para Análise", 
-                                            help="Cole aqui o texto que você deseja analisar quanto a riscos de comunicação",
+                if subtype == "Agenda de Reunião":
+                    prompt = f"""
+                    Crie uma agenda detalhada para uma reunião de {duration} minutos com base nas seguintes informações:
+                    
+                    Contexto do Projeto: {context}
+                    Participantes: {participants}
+                    Tópicos a serem abordados: {topics}
+                    
+                    Inclua alocação de tempo para cada item, responsáveis e objetivos claros.
+                    """
+                elif subtype == "Ata/Resumo de Reunião":
+                    decisions = st.text_area("Decisões tomadas", 
+                                        help="Liste as principais decisões tomadas durante a reunião",
+                                        height=100)
+                    actions = st.text_area("Ações acordadas", 
+                                        help="Liste as ações acordadas, responsáveis e prazos",
+                                        height=100)
+                    
+                    prompt = f"""
+                    Crie uma ata/resumo detalhado para uma reunião de {duration} minutos com base nas seguintes informações:
+                    
+                    Contexto do Projeto: {context}
+                    Participantes: {participants}
+                    Tópicos abordados: {topics}
+                    Decisões tomadas: {decisions}
+                    Ações acordadas: {actions}
+                    
+                    Organize por tópicos, destacando claramente decisões e próximos passos com responsáveis.
+                    """
+                else:  # Follow-up
+                    meeting_outcome = st.text_area("Resultado da reunião", 
+                                                help="Resuma os principais resultados da reunião",
+                                                height=100)
+                    action_items = st.text_area("Itens de ação", 
+                                            help="Liste os itens de ação, responsáveis e prazos",
+                                            height=100)
+                    
+                    prompt = f"""
+                    Crie uma mensagem de follow-up para uma reunião com base nas seguintes informações:
+                    
+                    Contexto do Projeto: {context}
+                    Participantes: {participants}
+                    Tópicos abordados: {topics}
+                    Resultado da reunião: {meeting_outcome}
+                    Itens de ação: {action_items}
+                    
+                    A mensagem deve agradecer a participação, resumir os principais pontos, detalhar próximos passos
+                    com responsáveis e prazos, e solicitar confirmação/feedback conforme apropriado.
+                    """
+                    
+            elif current_feature == "Tradutor de Jargão Técnico":
+                technical_content = st.text_area("Conteúdo Técnico", 
+                                            help="Cole aqui o texto técnico que precisa ser traduzido",
                                             height=200)
-            audience = st.text_input("Público-alvo", 
-                                   help="Descreva quem receberá esta comunicação")
-            stakes = st.select_slider("Importância da Comunicação", 
-                                    options=["Baixa", "Média", "Alta", "Crítica"],
-                                    value="Média")
+                audience = st.selectbox("Público-alvo", 
+                                    ["Executivos", "Clientes não-técnicos", "Equipe de Negócios", "Equipe Técnica Junior"])
+                key_concepts = st.text_input("Conceitos-chave a preservar", 
+                                        help="Liste conceitos técnicos que devem ser mantidos mesmo se simplificados")
+                
+                prompt = f"""
+                Traduza/adapte o seguinte conteúdo técnico para um público de {audience} com base nas seguintes informações:
+                
+                Contexto do Projeto: {context}
+                Conteúdo Técnico Original: {technical_content}
+                Conceitos-chave a preservar: {key_concepts}
+                
+                Para {audience}, foque em: 
+                - {'Impacto nos negócios e resultados de alto nível' if audience == 'Executivos' else ''}
+                - {'Benefícios e funcionalidades em linguagem acessível' if audience == 'Clientes não-técnicos' else ''}
+                - {'Conexão com objetivos de negócios e processos' if audience == 'Equipe de Negócios' else ''}
+                - {'Explicações técnicas mais detalhadas, mas com conceitos explicados' if audience == 'Equipe Técnica Junior' else ''}
+                
+                Mantenha a precisão conceitual mesmo simplificando a linguagem.
+                """
+                
+            elif current_feature == "Facilitador de Feedback":
+                situation = st.text_area("Situação", 
+                                    help="Descreva a situação específica para a qual você precisa fornecer feedback",
+                                    height=150)
+                strengths = st.text_area("Pontos Fortes", 
+                                    help="Liste aspectos positivos que devem ser destacados",
+                                    height=100)
+                areas_for_improvement = st.text_area("Áreas para Melhoria", 
+                                                help="Liste aspectos que precisam ser melhorados",
+                                                height=100)
+                relationship = st.selectbox("Relação com o Receptor", 
+                                        ["Membro da equipe direto", "Colega de mesmo nível", "Superior hierárquico", "Cliente", "Fornecedor"])
+                
+                prompt = f"""
+                Estruture um {subtype} construtivo e eficaz com base nas seguintes informações:
+                
+                Contexto do Projeto: {context}
+                Situação específica: {situation}
+                Pontos fortes a destacar: {strengths}
+                Áreas para melhoria: {areas_for_improvement}
+                Relação com o receptor: {relationship}
+                
+                O feedback deve:
+                - Ser específico e baseado em comportamentos observáveis
+                - Equilibrar aspectos positivos e áreas de melhoria
+                - Incluir exemplos concretos
+                - Oferecer sugestões acionáveis
+                - Usar tom apropriado para a relação ({relationship})
+                - Focar em crescimento e desenvolvimento, não em crítica
+                
+                Formate como um roteiro/script que o usuário pode seguir na conversa ou adaptar para uma comunicação escrita.
+                """
+                
+            elif current_feature == "Detector de Riscos de Comunicação":
+                content_to_analyze = st.text_area("Conteúdo para Análise", 
+                                                help="Cole aqui o texto que você deseja analisar quanto a riscos de comunicação",
+                                                height=200)
+                audience = st.text_input("Público-alvo", 
+                                    help="Descreva quem receberá esta comunicação")
+                stakes = st.select_slider("Importância da Comunicação", 
+                                        options=["Baixa", "Média", "Alta", "Crítica"],
+                                        value="Média")
+                
+                prompt = f"""
+                Analise o seguinte {subtype} quanto a riscos de comunicação:
+                
+                Contexto do Projeto: {context}
+                Público-alvo: {audience}
+                Importância da comunicação: {stakes}
+                
+                Conteúdo para análise:
+                ---
+                {content_to_analyze}
+                ---
+                
+                Sua análise deve:
+                1. Identificar ambiguidades, informações incompletas ou confusas
+                2. Apontar possíveis mal-entendidos baseados no público-alvo
+                3. Detectar problemas de tom ou linguagem inapropriada
+                4. Identificar informações sensíveis ou potencialmente problemáticas
+                5. Sugerir reformulações específicas para cada problema identificado
+                
+                Organize sua análise em forma de tabela com colunas para: Trecho problemático, Risco potencial, Sugestão de melhoria.
+                Ao final, forneça uma avaliação geral dos riscos de comunicação (Baixo/Médio/Alto) e um resumo das principais recomendações.
+                """
             
-            prompt = f"""
-            Analise o seguinte {subtype} quanto a riscos de comunicação:
-            
-            Contexto do Projeto: {context}
-            Público-alvo: {audience}
-            Importância da comunicação: {stakes}
-            
-            Conteúdo para análise:
-            ---
-            {content_to_analyze}
-            ---
-            
-            Sua análise deve:
-            1. Identificar ambiguidades, informações incompletas ou confusas
-            2. Apontar possíveis mal-entendidos baseados no público-alvo
-            3. Detectar problemas de tom ou linguagem inapropriada
-            4. Identificar informações sensíveis ou potencialmente problemáticas
-            5. Sugerir reformulações específicas para cada problema identificado
-            
-            Organize sua análise em forma de tabela com colunas para: Trecho problemático, Risco potencial, Sugestão de melhoria.
-            Ao final, forneça uma avaliação geral dos riscos de comunicação (Baixo/Médio/Alto) e um resumo das principais recomendações.
-            """
+            submit_button = st.form_submit_button(f"Gerar {current_feature}")
         
-        submit_button = st.form_submit_button(f"Gerar {current_feature}")
-    
-    if submit_button:
-        if st.session_state.api_key_configured:
-            # Gerar conteúdo
-            generated_content = generate_content(prompt, model, temperature)
-            st.session_state.generated_content = generated_content
-            
-            # Exibir resultado
-            st.markdown("### Resultado")
-            st.markdown('<div class="result-area">', unsafe_allow_html=True)
-            st.markdown(generated_content)
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Opções de download
-            col1, col2 = st.columns(2)
-            with col1:
-                # Download como texto
-                st.download_button(
-                    label="📄 Baixar como TXT",
-                    data=generated_content,
-                    file_name=f"{current_feature.lower().replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                    mime="text/plain"
-                )
-            
-            with col2:
-                # Download como DOCX
-                docx_buffer = export_as_docx(generated_content)
-                st.download_button(
-                    label="📝 Baixar como DOCX",
-                    data=docx_buffer,
-                    file_name=f"{current_feature.lower().replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                )
-            
-            # Feedback sobre o resultado
-            st.markdown("### Este resultado foi útil?")
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("👍 Sim, foi útil"):
-                    st.markdown('<p class="feedback-good">Obrigado pelo feedback positivo!</p>', unsafe_allow_html=True)
-            
-            with col2:
-                if st.button("👎 Não, preciso de melhoria"):
-                    st.markdown('<p class="feedback-bad">Lamentamos que não tenha atendido suas expectativas. Por favor, forneça detalhes no campo de feedback na barra lateral para podermos melhorar.</p>', unsafe_allow_html=True)
-        else:
-            st.warning("Por favor, configure sua API key da OpenAI na barra lateral para continuar.")
+        if submit_button:
+            if st.session_state.api_key_configured:
+                # Gerar conteúdo
+                generated_content = generate_content(prompt, model, temperature)
+                st.session_state.generated_content = generated_content
+                
+                # Exibir resultado
+                st.markdown("### Resultado")
+                st.markdown('<div class="result-area">', unsafe_allow_html=True)
+                st.markdown(generated_content)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Opções de download
+                col1, col2 = st.columns(2)
+                with col1:
+                    # Download como texto
+                    st.download_button(
+                        label="📄 Baixar como TXT",
+                        data=generated_content,
+                        file_name=f"{current_feature.lower().replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                        mime="text/plain"
+                    )
+                
+                with col2:
+                    # Download como DOCX
+                    docx_buffer = export_as_docx(generated_content)
+                    st.download_button(
+                        label="📝 Baixar como DOCX",
+                        data=docx_buffer,
+                        file_name=f"{current_feature.lower().replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+                
+                # Feedback sobre o resultado
+                st.markdown("### Este resultado foi útil?")
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("👍 Sim, foi útil"):
+                        st.markdown('<p class="feedback-good">Obrigado pelo feedback positivo!</p>', unsafe_allow_html=True)
+                
+                with col2:
+                    if st.button("👎 Não, preciso de melhoria"):
+                        st.markdown('<p class="feedback-bad">Lamentamos que não tenha atendido suas expectativas. Por favor, forneça detalhes no campo de feedback na barra lateral para podermos melhorar.</p>', unsafe_allow_html=True)
+            else:
+                st.warning("Por favor, configure sua API key da OpenAI na barra lateral para continuar.")
 
 # Histórico de gerações recentes
 if st.session_state.history:
@@ -542,3 +603,13 @@ st.markdown("""
     NEXUS | Assistente de Comunicação de Projetos | Criado para gerenciar comunicações de projetos com eficiência
 </div>
 """, unsafe_allow_html=True)
+
+# Informação sobre limites de uso
+st.sidebar.markdown("---")
+st.sidebar.info(f"""
+**Sobre os limites de uso:**
+- Máximo de {REQUEST_LIMIT} requisições por sessão
+- Máximo de {TOKEN_LIMIT} tokens por sessão
+- Tokens utilizados: {st.session_state.token_count}
+- Requisições feitas: {st.session_state.request_count}
+""")
