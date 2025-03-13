@@ -9,11 +9,11 @@ from io import BytesIO
 # No início do arquivo, após as outras importações
 import streamlit as st
 from openai import OpenAI
+import importlib.metadata
 
-# Para verificar a versão, em vez de usar openai.__version__
+# Para verificar a versão
 try:
-    import pkg_resources
-    openai_version = pkg_resources.get_distribution("openai").version
+    openai_version = importlib.metadata.version("openai")
     st.write(f"Versão da biblioteca OpenAI: {openai_version}")
 except Exception as e:
     st.write(f"Não foi possível determinar a versão da OpenAI: {str(e)}")
@@ -97,14 +97,15 @@ with st.sidebar:
     # API Key Input
     api_key = st.text_input("OpenAI API Key", type="password", value=st.secrets.get("NEXUS_AI_Agent", ""), help="Insira sua chave de API da OpenAI")
     
-    if api_key:
-        try:
-            st.session_state.client = OpenAI(api_key=api_key)
-            if not st.session_state.api_key_configured:
-                st.session_state.api_key_configured = True
-                st.success("API configurada com sucesso!")
-        except Exception as e:
-            st.error(f"Erro ao configurar a API: {e}")
+   # Na parte onde você configura o cliente OpenAI
+if api_key:
+    try:
+        st.session_state.client = OpenAI(api_key=api_key)
+        if not st.session_state.api_key_configured:
+            st.session_state.api_key_configured = True
+            st.success("API configurada com sucesso!")
+    except Exception as e:
+        st.error(f"Erro ao configurar a API: {str(e)}")
     
     # Configurações do modelo
     st.markdown("### Modelo e Parâmetros")
