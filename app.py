@@ -8,9 +8,6 @@ import re
 import docx
 from io import BytesIO
 
-import openai
-import streamlit as st
-
 # Adicione isto para verificar a versão
 st.write(f"Versão da biblioteca OpenAI: {openai.__version__}")
 
