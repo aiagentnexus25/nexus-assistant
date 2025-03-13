@@ -10,6 +10,8 @@ import docx
 from io import BytesIO
 import time
 
+# ================= CONFIGURATION =================
+
 # Configuração da página
 st.set_page_config(
     page_title="NEXUS - Assistente de Comunicação de Projetos",
@@ -18,7 +20,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Estilos CSS personalizados
+# CSS Personalizado
 st.markdown("""
 <style>
     .main-header {
@@ -79,10 +81,65 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# ================= CONSTANTS =================
+
 # Limites de uso restritivos para testes
 TOKEN_LIMIT = 3000      # Limite total de tokens por sessão
 REQUEST_LIMIT = 5       # Limite de solicitações por sessão
 RATE_LIMIT_SECONDS = 60 # Tempo mínimo (em segundos) entre requisições
+
+# System prompt base para o assistente
+system_prompt = """
+Você é o NEXUS, um assistente especializado em comunicação de projetos. Seu objetivo é ajudar gerentes de projetos, líderes de equipe e outros profissionais a comunicar-se de forma clara, eficaz e profissional em diversos contextos de projetos.
+
+Você possui cinco habilidades principais:
+
+1. Gerador de Comunicações Estruturadas: Criar e-mails profissionais, relatórios de status e comunicados formais.
+2. Assistente de Reuniões: Gerar agendas detalhadas, atas e resumos de reuniões, e estruturar follow-ups.
+3. Tradutor de Jargão Técnico: Simplificar linguagem técnica, adaptar comunicações para diferentes públicos e traduzir requisitos técnicos.
+4. Facilitador de Feedback: Estruturar feedback construtivo, transformar críticas em sugestões e criar roteiros para conversas difíceis.
+5. Detector de Riscos de Comunicação: Analisar comunicações, sugerir alternativas mais claras e avaliar adequação ao público.
+
+Ao responder, você deve:
+- Ser conciso mas completo
+- Usar linguagem profissional e tom adequado para o contexto
+- Estruturar o conteúdo de forma lógica e clara
+- Focar em comunicação eficaz e construtiva
+- Evitar jargões desnecessários, a menos que sejam apropriados para o público-alvo
+
+Observação importante: Esta é uma versão de demonstração com limites de uso. Seja eficiente e direto em suas respostas.
+"""
+
+# Definição de funcionalidades disponíveis
+feature_options = {
+    "Gerador de Comunicações Estruturadas": {
+        "description": "Crie e-mails profissionais, relatórios de status e comunicados formais a partir de pontos-chave.",
+        "icon": "📧",
+        "subtypes": ["E-mail Profissional", "Relatório de Status", "Comunicado Formal"]
+    },
+    "Assistente de Reuniões": {
+        "description": "Gere agendas detalhadas, atas de reuniões e mensagens de follow-up estruturadas.",
+        "icon": "📅",
+        "subtypes": ["Agenda de Reunião", "Ata/Resumo de Reunião", "Follow-up de Reunião"]
+    },
+    "Tradutor de Jargão Técnico": {
+        "description": "Simplifique linguagem técnica e adapte comunicações para diferentes públicos.",
+        "icon": "🔄",
+        "subtypes": ["Simplificação de Documento Técnico", "Adaptação para Executivos", "Adaptação para Clientes", "Adaptação para Equipe Técnica"]
+    },
+    "Facilitador de Feedback": {
+        "description": "Estruture feedback construtivo e prepare roteiros para conversas difíceis.",
+        "icon": "💬",
+        "subtypes": ["Feedback de Desempenho", "Feedback sobre Entregáveis", "Roteiro para Conversa Difícil"]
+    },
+    "Detector de Riscos de Comunicação": {
+        "description": "Analise comunicações para identificar ambiguidades e problemas potenciais.",
+        "icon": "🔍",
+        "subtypes": ["Análise de E-mail", "Análise de Comunicado", "Análise de Proposta", "Análise de Documento de Requisitos"]
+    }
+}
+
+# ================= SESSION STATE INITIALIZATION =================
 
 # Inicialização da sessão
 if 'api_key_configured' not in st.session_state:
@@ -108,28 +165,10 @@ if 'last_request_time' not in st.session_state:
     st.session_state.last_request_time = 0
 if 'session_id' not in st.session_state:
     st.session_state.session_id = datetime.now().strftime("%Y%m%d%H%M%S") + str(hash(datetime.now()))[:5]
+if 'current_feature' not in st.session_state:
+    st.session_state.current_feature = ""
 
-# System prompt base para o assistente
-system_prompt = """
-Você é o NEXUS, um assistente especializado em comunicação de projetos. Seu objetivo é ajudar gerentes de projetos, líderes de equipe e outros profissionais a comunicar-se de forma clara, eficaz e profissional em diversos contextos de projetos.
-
-Você possui cinco habilidades principais:
-
-1. Gerador de Comunicações Estruturadas: Criar e-mails profissionais, relatórios de status e comunicados formais.
-2. Assistente de Reuniões: Gerar agendas detalhadas, atas e resumos de reuniões, e estruturar follow-ups.
-3. Tradutor de Jargão Técnico: Simplificar linguagem técnica, adaptar comunicações para diferentes públicos e traduzir requisitos técnicos.
-4. Facilitador de Feedback: Estruturar feedback construtivo, transformar críticas em sugestões e criar roteiros para conversas difíceis.
-5. Detector de Riscos de Comunicação: Analisar comunicações, sugerir alternativas mais claras e avaliar adequação ao público.
-
-Ao responder, você deve:
-- Ser conciso mas completo
-- Usar linguagem profissional e tom adequado para o contexto
-- Estruturar o conteúdo de forma lógica e clara
-- Focar em comunicação eficaz e construtiva
-- Evitar jargões desnecessários, a menos que sejam apropriados para o público-alvo
-
-Observação importante: Esta é uma versão de demonstração com limites de uso. Seja eficiente e direto em suas respostas.
-"""
+# ================= HELPER FUNCTIONS =================
 
 # Função para gerar conteúdo via API OpenAI
 def generate_content(prompt, model="gpt-3.5-turbo", temperature=0.7):
@@ -196,7 +235,7 @@ def generate_content(prompt, model="gpt-3.5-turbo", temperature=0.7):
                 # Registrar uso
                 st.session_state.usage_data.append({
                     'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    'feature': current_feature,
+                    'feature': st.session_state.current_feature,
                     'tokens': total_tokens,
                     'model': model,
                     'session_id': st.session_state.session_id
@@ -205,7 +244,7 @@ def generate_content(prompt, model="gpt-3.5-turbo", temperature=0.7):
                 # Adicionar ao histórico
                 st.session_state.history.append({
                     'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    'feature': current_feature,
+                    'feature': st.session_state.current_feature,
                     'input': prompt[:100] + "..." if len(prompt) > 100 else prompt,  # Resumido para economizar espaço
                     'output': content,
                     'model': model,
@@ -224,7 +263,7 @@ def export_as_docx(content, filename="documento"):
     doc = docx.Document()
     
     # Adicionar título
-    doc.add_heading(f"{current_feature}", 0)
+    doc.add_heading(f"{st.session_state.current_feature}", 0)
     
     # Dividir por linhas e adicionar parágrafos
     paragraphs = content.split('\n')
@@ -249,6 +288,8 @@ def export_as_docx(content, filename="documento"):
     buffer.seek(0)
     
     return buffer
+
+# ================= SIDEBAR =================
 
 # Sidebar para configuração
 with st.sidebar:
@@ -298,6 +339,12 @@ with st.sidebar:
         st.success("Feedback enviado. Obrigado por nos ajudar a melhorar!")
     
     st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Informação sobre limites de uso
+    st.markdown("---")
+    st.caption("Esta é uma versão de demonstração com limites de uso para controlar custos. Para uso sem limites, implemente o NEXUS em seu próprio ambiente.")
+
+# ================= MAIN INTERFACE =================
 
 # Interface principal
 st.markdown('<h1 class="main-header">NEXUS</h1>', unsafe_allow_html=True)
@@ -312,38 +359,18 @@ Esta é uma versão de demonstração do NEXUS com limites de uso:
 - Tempo mínimo de {RATE_LIMIT_SECONDS} segundos entre requisições
 """)
 
+# Histórico de gerações recentes
+if st.session_state.history:
+    with st.expander("Histórico de Gerações Recentes", expanded=False):
+        for i, item in enumerate(reversed(st.session_state.history[-3:])):  # Limitado a 3 itens mais recentes
+            st.markdown(f"**{item['timestamp']} - {item['feature']}**")
+            if st.button(f"Carregar este conteúdo ↩️", key=f"load_{i}"):
+                st.session_state.current_feature = item['feature']
+                st.session_state.generated_content = item['output']
+                st.experimental_rerun()
+            st.markdown("---")
+
 # Seleção de funcionalidade
-feature_options = {
-    "Gerador de Comunicações Estruturadas": {
-        "description": "Crie e-mails profissionais, relatórios de status e comunicados formais a partir de pontos-chave.",
-        "icon": "📧",
-        "subtypes": ["E-mail Profissional", "Relatório de Status", "Comunicado Formal"]
-    },
-    "Assistente de Reuniões": {
-        "description": "Gere agendas detalhadas, atas de reuniões e mensagens de follow-up estruturadas.",
-        "icon": "📅",
-        "subtypes": ["Agenda de Reunião", "Ata/Resumo de Reunião", "Follow-up de Reunião"]
-    },
-    "Tradutor de Jargão Técnico": {
-        "description": "Simplifique linguagem técnica e adapte comunicações para diferentes públicos.",
-        "icon": "🔄",
-        "subtypes": ["Simplificação de Documento Técnico", "Adaptação para Executivos", "Adaptação para Clientes", "Adaptação para Equipe Técnica"]
-    },
-    "Facilitador de Feedback": {
-        "description": "Estruture feedback construtivo e prepare roteiros para conversas difíceis.",
-        "icon": "💬",
-        "subtypes": ["Feedback de Desempenho", "Feedback sobre Entregáveis", "Roteiro para Conversa Difícil"]
-    },
-    "Detector de Riscos de Comunicação": {
-        "description": "Analise comunicações para identificar ambiguidades e problemas potenciais.",
-        "icon": "🔍",
-        "subtypes": ["Análise de E-mail", "Análise de Comunicado", "Análise de Proposta", "Análise de Documento de Requisitos"]
-    }
-}
-
-# Inicializar variável para rastrear funcionalidade atual
-current_feature = ""
-
 # Organizar opções em colunas
 col1, col2 = st.columns(2)
 
@@ -354,19 +381,19 @@ for feature, details in feature_options.items():
             with st.expander(f"{details['icon']} {feature}", expanded=False):
                 st.markdown(f"**{details['description']}**")
                 if st.button(f"Usar {feature}", key=f"select_{feature}"):
-                    current_feature = feature
                     st.session_state.current_feature = feature
     else:
         with col2:
             with st.expander(f"{details['icon']} {feature}", expanded=False):
                 st.markdown(f"**{details['description']}**")
                 if st.button(f"Usar {feature}", key=f"select_{feature}"):
-                    current_feature = feature
                     st.session_state.current_feature = feature
     count += 1
 
+# ================= FEATURE INTERFACE =================
+
 # Se uma funcionalidade foi selecionada na sessão atual ou anteriormente
-if 'current_feature' in st.session_state and st.session_state.current_feature:
+if st.session_state.current_feature:
     current_feature = st.session_state.current_feature
     feature_details = feature_options[current_feature]
     
@@ -395,6 +422,8 @@ if 'current_feature' in st.session_state and st.session_state.current_feature:
                                 placeholder="Ex: Projeto de desenvolvimento do aplicativo mobile, fase de testes")
             
             # Campos específicos por funcionalidade
+            prompt = ""
+            
             if current_feature == "Gerador de Comunicações Estruturadas":
                 audience = st.text_input("Público-alvo", 
                                     help="Para quem esta comunicação será enviada (equipe, cliente, stakeholder)",
@@ -590,16 +619,53 @@ if 'current_feature' in st.session_state and st.session_state.current_feature:
                 st.error(f"Você atingiu o limite de {TOKEN_LIMIT} tokens para esta sessão. Por favor, tente novamente mais tarde.")
             elif st.session_state.request_count >= REQUEST_LIMIT:
                 st.error(f"Você atingiu o limite de {REQUEST_LIMIT} requisições para esta sessão. Por favor, tente novamente mais tarde.")
-            elif time.time() - st.session_state.last_request_time < RATE_LIMIT_SECONDS and st.session_state.request_count >
-            if st.session_state.history:
-            with st.expander("Histórico de Gerações Recentes", expanded=False):
-            for i, item in enumerate(reversed(st.session_state.history[-3:])):  # Limitado a 3 itens mais recentes
-            st.markdown(f"**{item['timestamp']} - {item['feature']}**")
-            if st.button(f"Carregar este conteúdo ↩️", key=f"load_{i}"):
-                st.session_state.current_feature = item['feature']
-                st.session_state.generated_content = item['output']
-                st.experimental_rerun()
-            st.markdown("---")
+            elif time.time() - st.session_state.last_request_time < RATE_LIMIT_SECONDS and st.session_state.request_count > 0:
+                wait_time = round(RATE_LIMIT_SECONDS - (time.time() - st.session_state.last_request_time))
+                st.warning(f"Por favor, aguarde {wait_time} segundos antes de fazer outra requisição.")
+            else:
+                # Gerar conteúdo
+                generated_content = generate_content(prompt, model="gpt-3.5-turbo", temperature=0.7)
+                st.session_state.generated_content = generated_content
+                
+                # Exibir resultado
+                st.markdown("### Resultado")
+                st.markdown('<div class="result-area">', unsafe_allow_html=True)
+                st.markdown(generated_content)
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Opções de download
+                col1, col2 = st.columns(2)
+                with col1:
+                    # Download como texto
+                    st.download_button(
+                        label="📄 Baixar como TXT",
+                        data=generated_content,
+                        file_name=f"{current_feature.lower().replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                        mime="text/plain"
+                    )
+                
+                with col2:
+                    # Download como DOCX
+                    docx_buffer = export_as_docx(generated_content)
+                    st.download_button(
+                        label="📝 Baixar como DOCX",
+                        data=docx_buffer,
+                        file_name=f"{current_feature.lower().replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+                
+                # Feedback sobre o resultado
+                st.markdown("### Este resultado foi útil?")
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("👍 Sim, foi útil"):
+                        st.markdown('<p class="feedback-good">Obrigado pelo feedback positivo!</p>', unsafe_allow_html=True)
+                
+                with col2:
+                    if st.button("👎 Não, preciso de melhoria"):
+                        st.markdown('<p class="feedback-bad">Lamentamos que não tenha atendido suas expectativas. Por favor, forneça detalhes no campo de feedback na barra lateral para podermos melhorar.</p>', unsafe_allow_html=True)
+
+# ================= FOOTER =================
 
 # Nota para o artigo
 st.write("")
@@ -625,8 +691,3 @@ st.markdown("""
     NEXUS | Assistente de Comunicação de Projetos | © 2025
 </div>
 """, unsafe_allow_html=True)
-
-# Informação sobre limites de uso
-st.sidebar.markdown("---")
-st.sidebar.caption("Esta é uma versão de demonstração com limites de uso para controlar custos. Para uso sem limites, implemente o NEXUS em seu próprio ambiente.")import streamlit as st
-
