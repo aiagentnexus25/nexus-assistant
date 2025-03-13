@@ -1,6 +1,5 @@
 import streamlit as st
 from openai import OpenAI
-import importlib.metadata
 import pandas as pd
 from datetime import datetime
 import plotly.express as px
