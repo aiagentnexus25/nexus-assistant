@@ -85,7 +85,7 @@ with st.sidebar:
     st.markdown("## Configurações")
     
     # API Key Input
-    api_key = st.text_input("OpenAI API Key", type="password", help="Insira sua chave de API da OpenAI")
+    api_key = st.text_input("OpenAI API Key", type="password", value=st.secrets.get("NEXUS_AI_Agent", ""), help="Insira sua chave de API da OpenAI")
     
     if api_key:
         try:
