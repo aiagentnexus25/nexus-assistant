@@ -1,20 +1,63 @@
-# NEXUS - Assistente de IA Acadêmico
+# NEXUS - Assistente de Comunicação de Projetos
 
-NEXUS é um assistente de IA especializado para pesquisadores e acadêmicos, projetado para auxiliar em todas as etapas do trabalho acadêmico. Esta aplicação web foi desenvolvida com Streamlit e utiliza a API da OpenAI para fornecer assistência inteligente e contextual.
+NEXUS é um assistente de IA especializado em comunicação de projetos, projetado para ajudar gerentes de projetos, líderes de equipe e outros profissionais a comunicar-se de forma clara, eficaz e profissional.
 
-## Funcionalidades
+## Exemplo concreto
 
-- Interface de chat intuitiva para interação com o assistente
-- Personalização de parâmetros do modelo (modelo, temperatura)
-- Rastreamento de uso de tokens e histórico de conversas
-- Dashboard de análise de uso
-- Sistema de feedback integrado
-- Exportação de histórico de conversas
+Um gerente de projetos precisa comunicar um atraso de três dias a um cliente importante. Ele:
+1. Acessa o NEXUS
+2. Seleciona "Gerador de Comunicações"
+3. Escolhe o tipo "E-mail"
+4. Preenche:
+   * Contexto: "Projeto de desenvolvimento do aplicativo mobile, fase de testes"
+   * Público: "Cliente, diretor de marketing da empresa XYZ"
+   * Pontos-chave: "Atraso de 3 dias devido a bugs na integração com API de pagamentos; Plano de recuperação com recursos adicionais; Impacto mínimo no prazo final"
+5. Clica em "Gerar Comunicação"
+6. Recebe um e-mail profissional, equilibrado, que comunica o problema de forma transparente mas construtiva, preservando a relação com o cliente
+
+## Implantação
+
+Este projeto pode ser facilmente implantado no Streamlit Community Cloud ou no Hugging Face Spaces. Consulte a documentação para instruções detalhadas de implantação.
+
+## Licença
+
+Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
+
+## Créditos
+
+Desenvolvido por [Ricardo Brigante] com Streamlit e OpenAI. Funcionalidades Principais
+
+### 1. Gerador de Comunicações Estruturadas
+* **Gera e-mails profissionais**: Transforma pontos-chave em e-mails bem estruturados para equipes, clientes e stakeholders
+* **Cria relatórios de status**: Produz atualizações de progresso de projetos em formato adequado
+* **Elabora comunicados formais**: Formata anúncios importantes como mudanças de escopo ou cronograma
+
+### 2. Assistente de Reuniões
+* **Gera agendas detalhadas**: Cria estruturas de reuniões com tópicos, tempo e responsáveis
+* **Produz atas e resumos**: Formata documentação pós-reunião com decisões e pontos de ação
+* **Estrutura follow-ups**: Ajuda a criar comunicações de acompanhamento após reuniões
+
+### 3. Tradutor de Jargão Técnico
+* **Simplifica linguagem técnica**: Converte termos e conceitos técnicos em linguagem acessível
+* **Adapta comunicações para diferentes públicos**: Reformula a mesma informação para diferentes stakeholders (executivos, clientes, equipe técnica)
+* **Traduz requisitos técnicos**: Ajuda a explicar conceitos complexos em termos mais simples
+
+### 4. Facilitador de Feedback
+* **Estrutura feedback construtivo**: Ajuda gerentes a formular feedback equilibrado e específico
+* **Transforma críticas em sugestões**: Reformula críticas para focar em soluções construtivas
+* **Cria roteiros de conversas difíceis**: Prepara estruturas para discussões delicadas com equipes
+
+### 5. Detector de Riscos de Comunicação
+* **Analisa comunicações importantes**: Identifica potenciais problemas, ambiguidades ou mal-entendidos
+* **Sugere alternativas mais claras**: Propõe reformulações para reduzir riscos de interpretação errada
+* **Avalia adequação ao público**: Verifica se a linguagem e tom são apropriados para o destinatário
 
 ## Requisitos
 
 - Python 3.8 ou superior
-- Chave de API da OpenAI
+- Streamlit
+- OpenAI API key
+- Outras dependências listadas em requirements.txt
 
 ## Instalação
 
@@ -38,16 +81,17 @@ streamlit run app.py
 
 1. Acesse a aplicação em seu navegador (geralmente em http://localhost:8501)
 2. Configure sua chave de API da OpenAI na barra lateral
-3. Comece a conversar com o NEXUS na área de chat
+3. Selecione a funcionalidade desejada
+4. Preencha os campos específicos para sua necessidade
+5. Clique no botão "Gerar" para criar o conteúdo
+6. Baixe o resultado como texto ou documento Word
 
-## Implantação
+## Como funciona na prática?
 
-Este projeto pode ser facilmente implantado no Streamlit Community Cloud ou no Hugging Face Spaces. Consulte a documentação para instruções detalhadas de implantação.
+1. **Interface simples**: O usuário acessa o aplicativo através de uma interface web criada com Streamlit
+2. **Seleção de função**: Escolhe qual das cinco funcionalidades principais deseja utilizar
+3. **Entrada de informações**: Preenche campos específicos para cada função (contexto, público-alvo, pontos-chave, etc.)
+4. **Processamento pela IA**: O modelo de IA (OpenAI) processa as informações e gera o conteúdo solicitado
+5. **Resultado e download**: O usuário recebe o texto formatado e pode baixá-lo ou copiá-lo
 
-## Licença
-
-Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
-
-## Créditos
-
-Desenvolvido por [Ricardo Brigante] com Streamlit e OpenAI.
+##
