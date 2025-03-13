@@ -591,11 +591,9 @@ if 'current_feature' in st.session_state and st.session_state.current_feature:
             elif st.session_state.request_count >= REQUEST_LIMIT:
                 st.error(f"Você atingiu o limite de {REQUEST_LIMIT} requisições para esta sessão. Por favor, tente novamente mais tarde.")
             elif time.time() - st.session_state.last_request_time < RATE_LIMIT_SECONDS and st.session_state.request_count >
-
-            # Histórico de gerações recentes
-if st.session_state.history:
-    with st.expander("Histórico de Gerações Recentes", expanded=False):
-        for i, item in enumerate(reversed(st.session_state.history[-3:])):  # Limitado a 3 itens mais recentes
+            if st.session_state.history:
+            with st.expander("Histórico de Gerações Recentes", expanded=False):
+            for i, item in enumerate(reversed(st.session_state.history[-3:])):  # Limitado a 3 itens mais recentes
             st.markdown(f"**{item['timestamp']} - {item['feature']}**")
             if st.button(f"Carregar este conteúdo ↩️", key=f"load_{i}"):
                 st.session_state.current_feature = item['feature']
