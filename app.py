@@ -5,18 +5,9 @@ import os
 import re
 import docx
 from io import BytesIO
-
-# No início do arquivo, após as outras importações
 import streamlit as st
 from openai import OpenAI
 import importlib.metadata
-
-# Para verificar a versão
-try:
-    openai_version = importlib.metadata.version("openai")
-    st.write(f"Versão da biblioteca OpenAI: {openai_version}")
-except Exception as e:
-    st.write(f"Não foi possível determinar a versão da OpenAI: {str(e)}")
 
 # Configuração da página
 st.set_page_config(
