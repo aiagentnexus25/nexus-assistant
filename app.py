@@ -98,7 +98,7 @@ with st.sidebar:
     
     # Configurações do modelo
     st.markdown("### Modelo e Parâmetros")
-    model = st.selectbox("Modelo", ["gpt-3.5-turbo", "gpt-4o", "gpt-4"])
+    model = st.selectbox("Modelo", ["gpt-3.5-turbo"])
     temperature = st.slider("Temperatura (Criatividade)", 0.0, 1.0, 0.7, 0.1)
     
     # Exibir estatísticas
