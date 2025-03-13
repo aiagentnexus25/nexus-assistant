@@ -1,5 +1,4 @@
 import streamlit as st
-import openai
 from openai import OpenAI
 import pandas as pd
 from datetime import datetime
@@ -8,9 +7,6 @@ import os
 import re
 import docx
 from io import BytesIO
-
-# Adicione isto para verificar a versão
-st.write(f"Versão da biblioteca OpenAI: {openai.__version__}")
 
 # Configuração da página
 st.set_page_config(
