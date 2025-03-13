@@ -1,160 +1,47 @@
 import streamlit as st
-import requests
 import json
-import time
-from datetime import datetime
 
-# Configuração da página
-st.set_page_config(page_title="NEXUS - Demo", page_icon="📋")
+# Configuração básica da página
+st.set_page_config(page_title="NEXUS - Verificação de Configuração", page_icon="🔧")
 
-st.title("NEXUS - Assistente de Comunicação")
-st.subheader("Versão de demonstração")
+st.title("NEXUS - Verificação de Configuração")
+st.write("Este aplicativo verifica se os segredos estão configurados corretamente.")
 
-# Limites de uso
-TOKEN_LIMIT = 3000
-REQUEST_LIMIT = 5
-RATE_LIMIT_SECONDS = 60
-
-# Inicialização da sessão
-if 'token_count' not in st.session_state:
-    st.session_state.token_count = 0
-if 'request_count' not in st.session_state:
-    st.session_state.request_count = 0
-if 'last_request_time' not in st.session_state:
-    st.session_state.last_request_time = 0
-if 'generated_content' not in st.session_state:
-    st.session_state.generated_content = ""
-
-# Carregar API key dos secrets
-api_key = st.secrets.get("OPENAI_API_KEY", "")
-if not api_key:
-    st.error("API key não configurada. Por favor, contate o administrador.")
-
-# Sidebar com informações de uso
-with st.sidebar:
-    st.header("Informações de Uso")
-    st.progress(st.session_state.request_count / REQUEST_LIMIT)
-    st.caption(f"Requisições: {st.session_state.request_count}/{REQUEST_LIMIT}")
-    st.progress(st.session_state.token_count / TOKEN_LIMIT)
-    st.caption(f"Tokens: {st.session_state.token_count}/{TOKEN_LIMIT}")
-    
-    st.markdown("---")
-    st.caption("Esta é uma versão de demonstração limitada.")
-
-# Função para gerar conteúdo
-def generate_content(prompt, feature_type):
-    # Verificar limites
-    if st.session_state.token_count >= TOKEN_LIMIT:
-        return "Limite de tokens excedido para esta sessão."
-    if st.session_state.request_count >= REQUEST_LIMIT:
-        return "Limite de requisições excedido para esta sessão."
-    
-    # Verificar rate limit
-    current_time = time.time()
-    if current_time - st.session_state.last_request_time < RATE_LIMIT_SECONDS and st.session_state.request_count > 0:
-        wait_time = round(RATE_LIMIT_SECONDS - (current_time - st.session_state.last_request_time))
-        return f"Por favor, aguarde {wait_time} segundos entre requisições."
-    
-    try:
-        # Atualizar contadores
-        st.session_state.last_request_time = current_time
-        st.session_state.request_count += 1
-        
-        # Adicionar sistema de instruções básico
-        system_message = "Você é NEXUS, um assistente especializado em comunicação de projetos."
-        
-        # API request
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}"
-        }
-        
-        payload = {
-            "model": "gpt-3.5-turbo",
-            "messages": [
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": 0.7,
-            "max_tokens": 1000
-        }
-        
-        response = requests.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers=headers,
-            data=json.dumps(payload),
-            timeout=60
-        )
-        
-        if response.status_code == 200:
-            result = response.json()
-            content = result['choices'][0]['message']['content']
-            
-            # Atualizar tokens
-            total_tokens = result['usage']['total_tokens']
-            st.session_state.token_count += total_tokens
-            
-            return content
-        else:
-            return f"Erro na API (Status {response.status_code})"
-    
-    except Exception as e:
-        return f"Erro: {str(e)}"
-
-# Interface simplificada
-st.info("Esta é uma versão simplificada do NEXUS com limites de uso para demonstração.")
-
-feature = st.selectbox(
-    "Selecione a funcionalidade",
-    ["E-mail Profissional", "Agenda de Reunião", "Simplificação de Linguagem Técnica", 
-     "Feedback Construtivo", "Análise de Riscos de Comunicação"]
-)
-
-with st.form("nexus_form"):
-    context = st.text_area("Contexto do Projeto", 
-                       placeholder="Descreva o projeto brevemente...",
-                       height=100)
-    
-    content = st.text_area("Conteúdo ou pontos-chave", 
-                       placeholder="Insira os detalhes específicos para sua solicitação...",
-                       height=150)
-    
-    audience = st.text_input("Público-alvo", 
-                         placeholder="Para quem esta comunicação se destina?")
-    
-    submit = st.form_submit_button("Gerar")
-
-if submit:
-    if not context or not content:
-        st.warning("Por favor, preencha pelo menos os campos de contexto e conteúdo.")
+# Tentar acessar segredos de diferentes maneiras
+try:
+    # Método 1: Acesso direto via st.secrets
+    if "OPENAI_API_KEY" in st.secrets:
+        api_key = st.secrets["OPENAI_API_KEY"]
+        masked_key = api_key[:5] + "..." + api_key[-4:] if len(api_key) > 10 else "***"
+        st.success(f"✅ Segredo encontrado via st.secrets['OPENAI_API_KEY']: {masked_key}")
     else:
-        prompt = f"""
-        Funcionalidade: {feature}
+        st.error("❌ Segredo 'OPENAI_API_KEY' não encontrado no st.secrets")
+    
+    # Método 2: Listar todos os segredos disponíveis (sem mostrar valores)
+    st.subheader("Segredos disponíveis:")
+    secret_keys = list(st.secrets.keys())
+    st.write(f"Chaves encontradas: {secret_keys}")
+    
+    # Método 3: Tentar acessar via get
+    api_key_get = st.secrets.get("OPENAI_API_KEY", "NÃO ENCONTRADO")
+    if api_key_get != "NÃO ENCONTRADO":
+        masked_key_get = api_key_get[:5] + "..." + api_key_get[-4:] if len(api_key_get) > 10 else "***"
+        st.success(f"✅ Segredo encontrado via st.secrets.get(): {masked_key_get}")
+    else:
+        st.error("❌ Segredo não encontrado via método get()")
+    
+    # Verificar o formato do segredo
+    if "OPENAI_API_KEY" in st.secrets:
+        prefix = api_key[:8] if len(api_key) > 8 else api_key
+        st.write(f"Prefixo da chave: {prefix}")
         
-        Contexto do Projeto: {context}
-        
-        Conteúdo: {content}
-        
-        Público-alvo: {audience}
-        
-        Por favor, gere o conteúdo apropriado com base nas informações acima.
-        """
-        
-        with st.spinner("Gerando resposta..."):
-            result = generate_content(prompt, feature)
-            st.session_state.generated_content = result
-        
-        st.subheader("Resultado")
-        st.write(result)
-        
-        # Botão para download
-        st.download_button(
-            "Baixar como texto",
-            result,
-            file_name=f"nexus_{feature.lower().replace(' ', '_')}.txt",
-            mime="text/plain"
-        )
+        if prefix.startswith("sk-"):
+            st.success("✅ Formato da chave parece correto (começa com 'sk-')")
+        else:
+            st.warning("⚠️ Formato da chave pode estar incorreto (não começa com 'sk-')")
+    
+except Exception as e:
+    st.error(f"Erro ao acessar segredos: {type(e).__name__}: {str(e)}")
 
-# Rodapé
-st.markdown("---")
-st.caption("NEXUS - Versão de Demonstração | © 2025")
+st.write("---")
+st.caption("Esta é uma ferramenta de diagnóstico para o NEXUS.")
