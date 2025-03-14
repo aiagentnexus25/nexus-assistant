@@ -411,7 +411,7 @@ def header():
         <div style="display: flex; gap: 15px; align-items: center;">
             <div style="font-size:14px;">100%</div>
             <div style="background: rgba(255,255,255,0.2); width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                <span>?</span>
+                <span style="color:white;">?</span>
             </div>
         </div>
     </div>
