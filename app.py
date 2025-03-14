@@ -414,16 +414,12 @@ if 'previous_screen' not in st.session_state:
 # ================= HELPER FUNCTIONS =================
 
 def header():
-    """Renderiza o cabeçalho com gradiente e link para retornar à página inicial"""
+    """Renderiza o cabeçalho com gradiente e botão home"""
     
-    # Verificar se estamos na página inicial ou não
-    is_home_page = not st.session_state.current_feature
-    
-    st.markdown(f"""
+    # Renderizar o cabeçalho original
+    st.markdown("""
     <div class="header-gradient">
-        <h1 style="margin:0; font-weight:600; font-size:32px; color:white; 
-                  {'cursor:default;' if is_home_page else 'cursor:pointer;'}" 
-            id="nexus-title">NEXUS</h1>
+        <h1 style="margin:0; font-weight:600; font-size:32px; color:white;">NEXUS</h1>
         <div style="display: flex; align-items: center;">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <div style="width:8px; height:8px; border-radius:50%; background:#28C840;"></div>
@@ -431,18 +427,11 @@ def header():
             </div>
         </div>
     </div>
-    
-    {'<script>
-        document.getElementById("nexus-title").addEventListener("click", function() {{
-            window.location.reload();
-        }});
-    </script>' if not is_home_page else ''}
     """, unsafe_allow_html=True)
     
-    # Adicionar um botão invisível que podemos usar para voltar à página inicial
-    # quando o JavaScript acima for clicado
-    if not is_home_page:
-        if st.button("Voltar", key="hidden_home_button", help="Voltar à página inicial"):
+    # Adicionar um botão pequeno na parte superior da página
+    if st.session_state.current_feature:  # Só mostrar o botão quando não estiver na página inicial
+        if st.button("🏠", help="Voltar à página inicial", key="home_button"):
             st.session_state.current_feature = ""
             st.session_state.previous_screen = None
             st.experimental_rerun()
