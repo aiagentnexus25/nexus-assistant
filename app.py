@@ -414,19 +414,22 @@ if 'previous_screen' not in st.session_state:
 # ================= HELPER FUNCTIONS =================
 
 def header():
-    """Renderiza o cabeçalho com gradiente e apenas o indicador de status da API"""
-    st.markdown("""
-    <div class="header-gradient">
-        <h1 style="margin:0; font-weight:600; font-size:32px; color:white;">NEXUS</h1>
-        <div style="display: flex; align-items: center;">
-            <!-- Indicador de status da API -->
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div style="width:8px; height:8px; border-radius:50%; background:#28C840;"></div>
-                <span style="font-size:12px; color:white; opacity:0.9;">API</span>
-            </div>
+    """Renderiza o cabeçalho com gradiente e botão para retornar à página inicial"""
+    col1, col2 = st.columns([4, 1])
+    
+    with col1:
+        if st.button("NEXUS", key="nexus_home_button", help="Voltar à página inicial"):
+            st.session_state.current_feature = ""
+            st.session_state.previous_screen = None
+            st.experimental_rerun()
+    
+    with col2:
+        st.markdown("""
+        <div style="display: flex; align-items: center; justify-content: flex-end;">
+            <div style="width:8px; height:8px; border-radius:50%; background:#28C840;"></div>
+            <span style="font-size:12px; margin-left:5px;">API</span>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
 def enrich_pmbok_prompt(prompt, pmbok_topic):
     """Enriquece o prompt com informações relevantes do PMBOK 7 baseado no tópico selecionado"""
