@@ -404,14 +404,15 @@ if 'optimized_content' not in st.session_state:
 # ================= HELPER FUNCTIONS =================
 
 def header():
-    """Renderiza o cabeçalho com gradiente"""
+    """Renderiza o cabeçalho com gradiente e apenas o indicador de status da API"""
     st.markdown("""
     <div class="header-gradient">
         <h1 style="margin:0; font-weight:600; font-size:32px; color:white;">NEXUS</h1>
-        <div style="display: flex; gap: 15px; align-items: center;">
-            <div style="font-size:14px; color:white;">100%</div>
-            <div style="background: rgba(255,255,255,0.2); width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                <span style="color:white;">?</span>
+        <div style="display: flex; align-items: center;">
+            <!-- Indicador de status da API -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width:8px; height:8px; border-radius:50%; background:#28C840;"></div>
+                <span style="font-size:12px; color:white; opacity:0.9;">API</span>
             </div>
         </div>
     </div>
