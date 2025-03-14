@@ -693,7 +693,7 @@ def setup_sidebar():
         </div>
         """, unsafe_allow_html=True)
 
-  # Interface principal do aplicativo
+ # Interface principal do aplicativo
 def main():
     # Renderizar o cabeçalho com gradiente
     header()
@@ -733,8 +733,8 @@ def main():
                     st.session_state.generated_content = item['output']
                     st.experimental_rerun()
                 st.markdown("---")
-
-# Se nenhuma funcionalidade selecionada, mostrar as opções
+    
+    # Se nenhuma funcionalidade selecionada, mostrar as opções
     if not st.session_state.current_feature:
         st.markdown("## Selecione uma funcionalidade")
         create_feature_cards()
@@ -767,8 +767,8 @@ def main():
                                         help="Descreva o projeto, fase atual e informações relevantes",
                                         height=100,
                                         placeholder="Ex: Projeto de desenvolvimento do aplicativo mobile, fase de testes")
-
-# Campos específicos por funcionalidade
+                
+                # Campos específicos por funcionalidade
                 prompt = ""
                 
                 if current_feature == "Gerador de Comunicações Estruturadas":
@@ -836,7 +836,7 @@ def main():
                         
                         Organize por tópicos, destacando claramente decisões e próximos passos com responsáveis.
                         """
-                      else:  # Follow-up
+                    else:  # Follow-up
                         meeting_outcome = st.text_area("Resultado da reunião", 
                                                 help="Resuma os principais resultados da reunião",
                                                 height=100,
@@ -886,7 +886,8 @@ def main():
                     Mantenha a precisão conceitual mesmo simplificando a linguagem.
                     Forneça uma explicação completa e detalhada, com exemplos e analogias apropriadas para o público.
                     """
-                  elif current_feature == "Facilitador de Feedback":
+                
+                elif current_feature == "Facilitador de Feedback":
                     situation = st.text_area("Situação", 
                                         help="Descreva a situação específica para a qual você precisa fornecer feedback",
                                         height=150,
@@ -922,7 +923,8 @@ def main():
                     Formate como um roteiro/script detalhado que o usuário pode seguir na conversa ou adaptar para uma comunicação escrita.
                     Adicione observações e dicas de comunicação não-verbal quando relevante.
                     """
-                    elif current_feature == "Detector de Riscos de Comunicação":
+                
+                elif current_feature == "Detector de Riscos de Comunicação":
                     content_to_analyze = st.text_area("Conteúdo para Análise", 
                                                     help="Cole aqui o texto que você deseja analisar quanto a riscos de comunicação",
                                                     height=200,
@@ -959,7 +961,8 @@ def main():
                     Ao final, forneça uma avaliação geral dos riscos de comunicação (Baixo/Médio/Alto) e um resumo das principais recomendações.
                     Forneça também uma versão revisada completa do texto.
                     """
-              elif current_feature == "Consultor PMBOK 7":
+                
+                elif current_feature == "Consultor PMBOK 7":
                     pmbok_topic = subtype  # Já definido pelo selectbox de subtypes
                     
                     project_context = st.text_area("Contexto do Projeto", 
@@ -1003,14 +1006,14 @@ def main():
                     
                     # Enriquecemos o prompt com informações relevantes do PMBOK 7
                     prompt = enrich_pmbok_prompt(base_prompt, pmbok_topic)
-
-            st.markdown('</div>', unsafe_allow_html=True)
+                
+                st.markdown('</div>', unsafe_allow_html=True)
                 
                 # Substituir os três botões por um único botão GERAR
                 st.markdown('<div class="button-primary">GERAR</div>', unsafe_allow_html=True)
                 submit_button = st.form_submit_button("GERAR", type="primary")
-            
-            # Processamento após o envio do formulário
+
+# Processamento após o envio do formulário
             if submit_button:
                 if not st.session_state.api_key_configured:
                     st.error("API não configurada. Por favor, contate o administrador.")
@@ -1057,8 +1060,35 @@ def main():
                             file_name=f"{current_feature.lower().replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx",
                             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                         )
+                    
+                    # Comentando a parte de análise de tom, já que você decidiu não incluir por enquanto
+                    # # Análise de Tom (para todos os tipos de conteúdo exceto PMBOK)
+                    # if current_feature != "Consultor PMBOK 7":
+                    #     create_tone_analysis_section(generated_content)
+                    
+                    # Feedback sobre o resultado
+                    st.markdown("### Este resultado foi útil?")
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button("👍 Sim, foi útil"):
+                            st.success("Obrigado pelo feedback positivo!")
+                    
+                    with col2:
+                        if st.button("👎 Não, preciso de melhoria"):
+                            st.error("Lamentamos que não tenha atendido suas expectativas. Por favor, forneça detalhes no campo de feedback na barra lateral para podermos melhorar.")
+# Análise de Tom (para todos os tipos de conteúdo exceto PMBOK)
+                                        
+                    # Feedback sobre o resultado
+                    st.markdown("### Este resultado foi útil?")
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button("👍 Sim, foi útil"):
+                            st.success("Obrigado pelo feedback positivo!")
+                    
+                    with col2:
+                        if st.button("👎 Não, preciso de melhoria"):
+                            st.error("Lamentamos que não tenha atendido suas expectativas. Por favor, forneça detalhes no campo de feedback na barra lateral para podermos melhorar.")
 
 # Iniciar a aplicação
 if __name__ == "__main__":
     main()
-
