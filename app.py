@@ -506,6 +506,7 @@ def analyze_tone(text, target_audience, desired_impact):
         }
 
 # Interface para análise de tom
+
 def create_tone_analysis_section(content):
     """
     Cria a seção de análise de tom na interface
@@ -517,6 +518,14 @@ def create_tone_analysis_section(content):
         None: Atualiza a UI diretamente
     """
     st.markdown("## 🎭 Análise de Tom e Otimização")
+    
+    # Inicializar estado para os inputs se não existirem
+    if 'tone_audience' not in st.session_state:
+        st.session_state.tone_audience = "Cliente"
+    if 'tone_impact' not in st.session_state:
+        st.session_state.tone_impact = "Tranquilizar"
+    if 'tone_analysis_result' not in st.session_state:
+        st.session_state.tone_analysis_result = None
     
     with st.expander("Analisar e otimizar o tom da comunicação", expanded=True):
         col1, col2 = st.columns(2)
@@ -536,8 +545,24 @@ def create_tone_analysis_section(content):
                 key="tone_impact"
             )
         
-        if st.button("Analisar e otimizar tom", key="analyze_tone_btn"):
-            tone_analysis = analyze_tone(content, target_audience, desired_impact)
+        # Usar um callback para análise de tom em vez de verificar clique de botão
+        def analyze_tone_callback():
+            with st.spinner("Analisando tom da comunicação..."):
+                st.session_state.tone_analysis_result = analyze_tone(
+                    content, 
+                    st.session_state.tone_audience, 
+                    st.session_state.tone_impact
+                )
+        
+        st.button(
+            "Analisar e otimizar tom", 
+            key="analyze_tone_btn", 
+            on_click=analyze_tone_callback
+        )
+        
+        # Exibir resultados se disponíveis
+        if st.session_state.tone_analysis_result:
+            tone_analysis = st.session_state.tone_analysis_result
             
             st.markdown('<div class="tone-analysis-section">', unsafe_allow_html=True)
             
