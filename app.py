@@ -911,7 +911,6 @@ def main():
     with st.expander("ℹ️ Sobre esta versão", expanded=False):
     st.markdown(f"""
     **Versão NEXUS Aprimorada**
-    
     Esta versão possui interface moderna e limites expandidos:
     * Até {REQUEST_LIMIT} requisições por sessão
     * Até {TOKEN_LIMIT} tokens por sessão
