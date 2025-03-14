@@ -796,66 +796,35 @@ def create_tone_analysis_section(content):
 def create_feature_cards():
     """Cria os cartões de seleção de funcionalidades na interface principal"""
     
-    st.markdown('<div class="card-container">', unsafe_allow_html=True)
-    
-    # Dividir as funcionalidades em duas linhas
+    col1, col2 = st.columns(2)
     features_list = list(feature_options.items())
-    first_row = features_list[:3]
-    second_row = features_list[3:]
     
-    # Primeira linha
-    for name, details in first_row:
-        color = details["color"]
-        icon = details["icon"]
-        description = details["description"]
-        
-        card_html = f"""
-        <div class="feature-card card-{color}" onclick="return false;">
-            <div style="display:flex; align-items:center; gap:15px;">
-                <div style="background:var(--{color})20; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                    <span style="font-size:20px; color:var(--{color});">{icon}</span>
+    # Distribuir as funcionalidades em duas colunas
+    for i, (name, details) in enumerate(features_list):
+        current_col = col1 if i % 2 == 0 else col2
+        with current_col:
+            color = details["color"]
+            icon = details["icon"]
+            description = details["description"]
+            
+            # Use um container para o estilo do cartão
+            with st.container():
+                st.markdown(f"""
+                <div style="background-color: white; padding: 15px; border-radius: 10px; 
+                            margin-bottom: 15px; border-left: 4px solid var(--{color});">
+                    <h3 style="margin:0; color:var(--dark-purple); font-size:18px;">
+                        {icon} {name}
+                    </h3>
+                    <p style="margin:5px 0 0 0; color:var(--text-secondary); font-size:14px;">
+                        {description}
+                    </p>
                 </div>
-                <div>
-                    <h3 style="margin:0; color:var(--dark-purple); font-size:18px;">{name}</h3>
-                    <p style="margin:5px 0 0 0; color:var(--text-secondary); font-size:14px;">{description}</p>
-                </div>
-            </div>
-        </div>
-        """
-        st.markdown(card_html, unsafe_allow_html=True)
-        
-        # Botão real (oculto visualmente mas funcional)
-        if st.button(f"Selecionar {name}", key=f"select_{name}", label_visibility="collapsed"):
-            st.session_state.current_feature = name
-            st.experimental_rerun()
-    
-    # Segunda linha    
-    for name, details in second_row:
-        color = details["color"]
-        icon = details["icon"]
-        description = details["description"]
-        
-        card_html = f"""
-        <div class="feature-card card-{color}" onclick="return false;">
-            <div style="display:flex; align-items:center; gap:15px;">
-                <div style="background:var(--{color})20; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                    <span style="font-size:20px; color:var(--{color});">{icon}</span>
-                </div>
-                <div>
-                    <h3 style="margin:0; color:var(--dark-purple); font-size:18px;">{name}</h3>
-                    <p style="margin:5px 0 0 0; color:var(--text-secondary); font-size:14px;">{description}</p>
-                </div>
-            </div>
-        </div>
-        """
-        st.markdown(card_html, unsafe_allow_html=True)
-        
-        # Botão real (oculto visualmente mas funcional)
-        if st.button(f"Selecionar {name}", key=f"select_{name}", label_visibility="collapsed"):
-            st.session_state.current_feature = name
-            st.experimental_rerun()
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+                
+                # Botão simples sem personalização visual 
+                if st.button(f"Usar {name}", key=f"select_{name}"):
+                    st.session_state.current_feature = name
+                    st.experimental_rerun()
 
 # Função para configurar e exibir a sidebar
 def setup_sidebar():
