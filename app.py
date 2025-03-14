@@ -1010,7 +1010,29 @@ def main():
                 st.markdown('</div>', unsafe_allow_html=True)
                 
                 # Substituir os três botões por um único botão GERAR
-                st.markdown('<div class="button-primary">GERAR</div>', unsafe_allow_html=True)
+                st.markdown("""
+                <style>
+                    /* Estilo para o botão submit roxo */
+                   .stButton > button {
+                        border-radius: 4px;
+                        padding: 0.5rem 1rem;
+                        font-weight: 500;
+                    }
+
+                    .stButton > button[data-baseweb="button"] {
+                        background-color: #6247AA;  /* Cor roxa */
+                        color: white;
+                        border: none;
+                    }
+                
+                    .stButton > button[data-baseweb="button"]:hover {
+                        background-color: #7955c9;  /* Roxo mais claro no hover */
+                        color: white;
+                    }
+
+                </style>
+                """, unsafe_allow_html=True)
+                
                 submit_button = st.form_submit_button("GERAR", type="primary")
 
 # Processamento após o envio do formulário
