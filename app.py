@@ -908,13 +908,15 @@ def main():
     setup_sidebar()
     
     # Exibir mensagem sobre versão aprimorada
-    st.info(f"""
+    with st.expander("ℹ️ Sobre esta versão", expanded=False):
+    st.markdown(f"""
     **Versão NEXUS Aprimorada**
-    Esta versão do NEXUS possui interface moderna e limites expandidos:
-    - Até {REQUEST_LIMIT} requisições por sessão
-    - Até {TOKEN_LIMIT} tokens por sessão
-    - Design responsivo para todos os dispositivos
-    - Análise avançada de tom comunicacional
+    
+    Esta versão possui interface moderna e limites expandidos:
+    * Até {REQUEST_LIMIT} requisições por sessão
+    * Até {TOKEN_LIMIT} tokens por sessão
+    * Design responsivo para todos os dispositivos
+    * Análise avançada de tom comunicacional
     """)
     
     # Histórico de gerações recentes
