@@ -1088,16 +1088,7 @@ def main():
                     # if current_feature != "Consultor PMBOK 7":
                     #     create_tone_analysis_section(generated_content)
                     
-                    # Feedback sobre o resultado
-                    st.markdown("### Este resultado foi útil?")
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        if st.button("👍 Sim, foi útil"):
-                            st.success("Obrigado pelo feedback positivo!")
                     
-                    with col2:
-                        if st.button("👎 Não, preciso de melhoria"):
-                            st.error("Lamentamos que não tenha atendido suas expectativas. Por favor, forneça detalhes no campo de feedback na barra lateral para podermos melhorar.")
 # Análise de Tom (para todos os tipos de conteúdo exceto PMBOK)
                                         
                     # Feedback sobre o resultado
