@@ -909,14 +909,14 @@ def main():
     
     # Exibir mensagem sobre versão aprimorada
     with st.expander("ℹ️ Sobre esta versão", expanded=False):
-    st.markdown(f"""
-    **Versão NEXUS Aprimorada**
-    Esta versão possui interface moderna e limites expandidos:
-    * Até {REQUEST_LIMIT} requisições por sessão
-    * Até {TOKEN_LIMIT} tokens por sessão
-    * Design responsivo para todos os dispositivos
-    * Análise avançada de tom comunicacional
-    """)
+        st.markdown(f"""
+        **Versão NEXUS Aprimorada**
+        Esta versão possui interface moderna e limites expandidos:
+        * Até {REQUEST_LIMIT} requisições por sessão
+        * Até {TOKEN_LIMIT} tokens por sessão
+        * Design responsivo para todos os dispositivos
+        * Análise avançada de tom comunicacional
+        """)
     
     # Histórico de gerações recentes
     if st.session_state.history:
