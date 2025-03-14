@@ -527,6 +527,7 @@ PMBOK7_KNOWLEDGE_BASE = {
                 {"desafio": "Mudanças não sustentadas após conclusão formal do projeto", 
                  "superação": "Desenhar explicitamente mecanismos de reforço e institucionalização; transferir formalmente ownership para estruturas operacionais permanentes; criar mecanismos de monitoramento pós-projeto"}
             ]
+            }    
         },
 
    "domínios": {
@@ -800,10 +801,10 @@ PMBOK7_KNOWLEDGE_BASE = {
                 "Mensuração: Sistemas de medição devem incluir indicadores precoces de riscos e oportunidades",
                 "Stakeholders: Stakeholders são fontes de incerteza e também recursos para gerenciá-la"
             ]
-        },
+        }
     },
 
- "mudanças_paradigmáticas": {
+   "mudanças_paradigmáticas": {
         "1. Transição de processos para princípios e domínios de performance": {
             "definição": "Esta mudança representa uma evolução profunda da estrutura conceitual do gerenciamento de projetos - de uma visão mecanicista focada em etapas específicas para uma abordagem sistêmica focada em resultados. Em vez de prescrever 'como' executar tarefas através de processos detalhados, o PMBOK 7 estabelece 'o que' deve ser alcançado através de princípios orientadores e áreas de performance.",
             "dimensões": [
@@ -1083,7 +1084,6 @@ PMBOK7_KNOWLEDGE_BASE = {
 }       
         
         
-
         
 # System prompt atualizado com conteúdo mais detalhado e PMBOK 7
 system_prompt = """
