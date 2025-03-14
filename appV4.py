@@ -31,6 +31,24 @@ nexus_colors = {
     "text_secondary": "#86868B"
 }
 
+st.markdown("""
+<style>
+    /* Ocultar completamente a sidebar */
+    [data-testid="collapsedControl"] {
+        display: none;
+    }
+    section[data-testid="stSidebar"] {
+        display: none;
+    }
+    /* Ajustar a área principal para ocupar toda a largura */
+    .main .block-container {
+        padding-left: 2rem;
+        padding-right: 2rem;
+        max-width: 1200px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Base de conhecimento sobre PMBOK 7
 PMBOK7_KNOWLEDGE_BASE = {
     "princípios": [
