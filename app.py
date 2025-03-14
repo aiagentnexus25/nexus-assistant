@@ -12,6 +12,25 @@ import time
 
 # ================= CONFIGURATION =================
 
+# Ocultando a SIDEBAR
+st.markdown("""
+<style>
+    /* Ocultar completamente a sidebar */
+    [data-testid="collapsedControl"] {
+        display: none;
+    }
+    section[data-testid="stSidebar"] {
+        display: none;
+    }
+    /* Ajustar a área principal para ocupar toda a largura */
+    .main .block-container {
+        padding-left: 2rem;
+        padding-right: 2rem;
+        max-width: 1200px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Configuração da página
 st.set_page_config(
     page_title="NEXUS - Assistente de Comunicação de Projetos",
