@@ -414,27 +414,36 @@ if 'previous_screen' not in st.session_state:
 # ================= HELPER FUNCTIONS =================
 
 def header():
-    """Renderiza o cabeçalho com gradiente e botão home"""
+    """Renderiza o cabeçalho com gradiente e faz o título clicável para voltar à página inicial"""
     
-    # Renderizar o cabeçalho original
+    # Renderizamos o cabeçalho sem o título, apenas com o fundo gradiente
     st.markdown("""
-    <div class="header-gradient">
-        <h1 style="margin:0; font-weight:600; font-size:32px; color:white;">NEXUS</h1>
-        <div style="display: flex; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div style="width:8px; height:8px; border-radius:50%; background:#28C840;"></div>
-                <span style="font-size:12px; color:white; opacity:0.9;">API</span>
-            </div>
-        </div>
+    <div class="header-gradient" style="display: flex; align-items: center; justify-content: space-between;">
     </div>
     """, unsafe_allow_html=True)
     
-    # Adicionar um botão pequeno na parte superior da página
-    if st.session_state.current_feature:  # Só mostrar o botão quando não estiver na página inicial
-        if st.button("🏠", help="Voltar à página inicial", key="home_button"):
-            st.session_state.current_feature = ""
-            st.session_state.previous_screen = None
-            st.experimental_rerun()
+    # Agora usamos colunas do Streamlit para posicionar elementos sobre o gradiente
+    col1, col2 = st.columns([4, 1])
+    
+    with col1:
+        # Se não estamos na página inicial, mostramos um botão
+        if st.session_state.current_feature:
+            if st.button("NEXUS", key="nexus_title_button", 
+                      use_container_width=False):
+                st.session_state.current_feature = ""
+                st.experimental_rerun()
+        # Se estamos na página inicial, mostramos apenas texto
+        else:
+            st.markdown("<h2 style='margin-top: -70px; color: white;'>NEXUS</h2>", unsafe_allow_html=True)
+    
+    with col2:
+        # Indicador de API
+        st.markdown("""
+        <div style="margin-top: -70px; display: flex; justify-content: flex-end; align-items: center; gap: 8px;">
+            <div style="width:8px; height:8px; border-radius:50%; background:#28C840;"></div>
+            <span style="font-size:12px; color:white; opacity:0.9;">API</span>
+        </div>
+        """, unsafe_allow_html=True)
 
 def enrich_pmbok_prompt(prompt, pmbok_topic):
     """Enriquece o prompt com informações relevantes do PMBOK 7 baseado no tópico selecionado"""
