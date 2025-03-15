@@ -111,6 +111,26 @@ st.markdown("""
         --text-primary: #1D1D1F;
         --text-secondary: #86868B;
     }
+
+    /* Cabeçalho gradiente mais amplo e vibrante */
+    .header-gradient {
+        background: linear-gradient(90deg, 
+                                  #6247AA 0%, 
+                                  #9747FF 15%, 
+                                  #FF6D2A 40%, 
+                                  #FF9E43 60%, 
+                                  #00C1D5 80%, 
+                                  #01E2FF 100%);
+        padding: 1.5rem 2rem;
+        color: white;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        height: 90px;
+    }
     
     /* Reset e estilos gerais */
     * {
