@@ -1021,14 +1021,14 @@ def main():
                     }
 
                     .stButton > button[data-baseweb="button"] {
-                        background-color: #6247AA;  /* Cor roxa */
-                        color: white;
+                        background-color: #6247AA !important;  /* Cor roxa */
+                        color: white !important;
                         border: none;
                     }
                 
                     .stButton > button[data-baseweb="button"]:hover {
-                        background-color: #7955c9;  /* Roxo mais claro no hover */
-                        color: white;
+                        background-color: #6247AA !important;  /* Cor roxa */
+                        color: white !important;
                     }
 
                 </style>
