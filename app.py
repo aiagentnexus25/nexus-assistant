@@ -415,52 +415,19 @@ if 'previous_screen' not in st.session_state:
 # ================= HELPER FUNCTIONS =================
 
 def header():
-    """Renderiza o cabeçalho com gradiente amplo e completo"""
+    """Renderiza o cabeçalho com gradiente apenas com o título NEXUS"""
     
-    # Criar um header gradiente de largura total
     st.markdown("""
-    <div style="
-        background: linear-gradient(90deg, #6247AA 0%, #9747FF 15%, #FF6D2A 40%, #FF9E43 60%, #00C1D5 80%, #01E2FF 100%);
-        padding: 1.5rem 2rem;
-        color: white;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        height: 90px;
-        width: 100%;
-    ">
-        <h1 style="margin: 0; font-weight: 600; font-size: 42px; color: white;">NEXUS</h1>
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <div style="width: 10px; height: 10px; border-radius: 50%; background: #28C840;"></div>
-            <span style="font-size: 14px; color: white; opacity: 0.9;">API</span>
+    <div class="header-gradient">
+        <h1 style="margin:0; font-weight:600; font-size:32px; color:white;">NEXUS</h1>
+        <div style="display: flex; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width:8px; height:8px; border-radius:50%; background:#28C840;"></div>
+                <span style="font-size:12px; color:white; opacity:0.9;">API</span>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
-    
-    # Adicionar funcionalidade de botão quando não estiver na página inicial
-    if st.session_state.current_feature:
-        # Colocar um botão transparente sobre o título
-        st.markdown("""
-        <style>
-        .title-button-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 200px;
-            height: 90px;
-            z-index: 999;
-            cursor: pointer;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        # Criar uma área clicável invisível
-        if st.button("Voltar para início", key="home_button_invisible", help="Voltar à página inicial"):
-            st.session_state.current_feature = ""
-            st.experimental_rerun()
 
 def enrich_pmbok_prompt(prompt, pmbok_topic):
     """Enriquece o prompt com informações relevantes do PMBOK 7 baseado no tópico selecionado"""
