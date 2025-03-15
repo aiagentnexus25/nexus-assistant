@@ -342,7 +342,7 @@ st.markdown("""
 # Definição de funcionalidades disponíveis (incluindo PMBOK 7)
 feature_options = {
     "Gerador de Comunicações Estruturadas": {
-        "description": "Crie e-mails profissionais, relatórios de status e comunicados formais a partir de pontos-chave.",
+        "description": "Crie comunicações profissionais a partir de pontos-chave.",
         "icon": "📧",
         "color": "purple",
         "subtypes": ["E-mail Profissional", "Relatório de Status", "Comunicado Formal"]
@@ -372,7 +372,7 @@ feature_options = {
         "subtypes": ["Análise de E-mail", "Análise de Comunicado", "Análise de Proposta", "Análise de Documento de Requisitos"]
     },
     "Consultor PMBOK 7": {
-        "description": "Esclareça dúvidas e obtenha orientações sobre gerenciamento de projetos conforme o PMBOK 7.",
+        "description": "Esclareça dúvidas sobre gerenciamento de projetos conforme o PMBOK 7.",
         "icon": "📚",
         "color": "teal",
         "subtypes": ["Princípios de Gerenciamento", "Domínios de Performance", "Adaptação de Metodologias", "Ferramentas e Técnicas", "Melhores Práticas"]
