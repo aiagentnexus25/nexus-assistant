@@ -1034,7 +1034,7 @@ def main():
                 </style>
                 """, unsafe_allow_html=True)
                 
-                submit_button = st.form_submit_button("GERAR", type="primary")
+                submit_button = st.form_submit_button("GERAR")
 
 # Processamento após o envio do formulário
             if submit_button:
