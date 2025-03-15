@@ -353,7 +353,7 @@ feature_options = {
         "color": "orange",
         "subtypes": ["Agenda de Reunião", "Ata/Resumo de Reunião", "Follow-up de Reunião"]
     },
-    "Tradutor de Jargão Técnico": {
+    "Simplificador de Linguagem Técnica": {
         "description": "Simplifique linguagem técnica e adapte comunicações para diferentes públicos.",
         "icon": "🔄",
         "color": "teal",
@@ -860,7 +860,7 @@ def main():
                         com responsáveis e prazos, e solicitar confirmação/feedback conforme apropriado.
                         """
                         
-                elif current_feature == "Tradutor de Jargão Técnico":
+                elif current_feature == "Simplificador de Linguagem Técnica":
                     technical_content = st.text_area("Conteúdo Técnico", 
                                                 help="Cole aqui o texto técnico que precisa ser traduzido",
                                                 height=200,
