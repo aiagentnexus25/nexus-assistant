@@ -1015,22 +1015,13 @@ def main():
                 <style>
                     /* Estilo para o botão submit roxo */
                    .stButton > button {
+                        background-color: #6247AA !important;
+                        color: white !important;
+                        border: none !important;
                         border-radius: 4px;
                         padding: 0.5rem 1rem;
                         font-weight: 500;
-                    }
-
-                    .stButton > button[data-baseweb="button"] {
-                        background-color: #6247AA !important;  /* Cor roxa */
-                        color: white !important;
-                        border: none;
-                    }
-                
-                    .stButton > button[data-baseweb="button"]:hover {
-                        background-color: #6247AA !important;  /* Cor roxa */
-                        color: white !important;
-                    }
-
+                   }
                 </style>
                 """, unsafe_allow_html=True)
                 
