@@ -79,58 +79,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Base de conhecimento sobre PMBOK 7 - mantida como um módulo separado
-# Usando lazy loading para não carregar tudo de uma vez
-@functools.lru_cache(maxsize=1)
-def get_pmbok_knowledge():
-    return {
-        "princípios": [
-            "1. Ser um administrador diligente, respeitoso e cuidadoso",
-            "2. Criar um ambiente colaborativo da equipe do projeto",
-            "3. Envolver efetivamente as partes interessadas",
-            "4. Focar no valor",
-            "5. Reconhecer, avaliar e responder às interações do sistema",
-            "6. Demonstrar comportamentos de liderança",
-            "7. Adaptar com base no contexto",
-            "8. Incorporar qualidade nos processos e resultados",
-            "9. Navegar na complexidade",
-            "10. Otimizar respostas a riscos",
-            "11. Abraçar adaptabilidade e resiliência",
-            "12. Permitir mudança para alcançar o estado futuro previsto"
-        ],
-        
-        "domínios": [
-            "1. Stakeholders (Partes Interessadas)",
-            "2. Team (Equipe)",
-            "3. Development Approach and Life Cycle (Abordagem de Desenvolvimento e Ciclo de Vida)",
-            "4. Planning (Planejamento)",
-            "5. Project Work (Trabalho do Projeto)",
-            "6. Delivery (Entrega)",
-            "7. Measurement (Mensuração)",
-            "8. Uncertainty (Incerteza)"
-        ],
-        
-        "metodologias": {
-            "preditiva": "Abordagem tradicional (cascata) com fases sequenciais",
-            "adaptativa": "Abordagens ágeis e iterativas (Scrum, Kanban, etc.)",
-            "híbrida": "Combinação de elementos preditivos e adaptativos"
-        },
-        
-        "mudancas_principais": [
-            "1. Transição de processos para princípios e domínios de performance",
-            "2. Foco em entrega de valor em vez de apenas escopo, tempo e custo",
-            "3. Maior ênfase em adaptabilidade e contexto",
-            "4. Abordagem de sistemas em vez de processos isolados",
-            "5. Reconhecimento de múltiplas abordagens (adaptativa, preditiva, híbrida)",
-            "6. Maior ênfase na liderança e soft skills",
-            "7. Visão holística do gerenciamento de projetos"
-        ]
-    }
-
-# Limites do sistema - mais realistas para evitar problemas de desempenho
-TOKEN_LIMIT = 50000     # Reduzido para evitar sobrecarga
-REQUEST_LIMIT = 30      # Valor mais realista baseado em uso típico
-
 # CSS Aprimorado - Mais limpo, moderno e inspirado em design Apple
 st.markdown("""
 <style>
@@ -374,8 +322,54 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Base de conhecimento sobre PMBOK 7 - mantida como um módulo separado com lazy loading
+@functools.lru_cache(maxsize=1)
+def get_pmbok_knowledge():
+    return {
+        "princípios": [
+            "1. Ser um administrador diligente, respeitoso e cuidadoso",
+            "2. Criar um ambiente colaborativo da equipe do projeto",
+            "3. Envolver efetivamente as partes interessadas",
+            "4. Focar no valor",
+            "5. Reconhecer, avaliar e responder às interações do sistema",
+            "6. Demonstrar comportamentos de liderança",
+            "7. Adaptar com base no contexto",
+            "8. Incorporar qualidade nos processos e resultados",
+            "9. Navegar na complexidade",
+            "10. Otimizar respostas a riscos",
+            "11. Abraçar adaptabilidade e resiliência",
+            "12. Permitir mudança para alcançar o estado futuro previsto"
+        ],
+        
+        "domínios": [
+            "1. Stakeholders (Partes Interessadas)",
+            "2. Team (Equipe)",
+            "3. Development Approach and Life Cycle (Abordagem de Desenvolvimento e Ciclo de Vida)",
+            "4. Planning (Planejamento)",
+            "5. Project Work (Trabalho do Projeto)",
+            "6. Delivery (Entrega)",
+            "7. Measurement (Mensuração)",
+            "8. Uncertainty (Incerteza)"
+        ],
+        
+        "metodologias": {
+            "preditiva": "Abordagem tradicional (cascata) com fases sequenciais",
+            "adaptativa": "Abordagens ágeis e iterativas (Scrum, Kanban, etc.)",
+            "híbrida": "Combinação de elementos preditivos e adaptativos"
+        },
+        
+        "mudancas_principais": [
+            "1. Transição de processos para princípios e domínios de performance",
+            "2. Foco em entrega de valor em vez de apenas escopo, tempo e custo",
+            "3. Maior ênfase em adaptabilidade e contexto",
+            "4. Abordagem de sistemas em vez de processos isolados",
+            "5. Reconhecimento de múltiplas abordagens (adaptativa, preditiva, híbrida)",
+            "6. Maior ênfase na liderança e soft skills",
+            "7. Visão holística do gerenciamento de projetos"
+        ]
+    }
+
 # Definição de funcionalidades disponíveis - refatorado para mais eficiência
-# Usando uma estrutura de dicionário mais otimizada
 FEATURE_OPTIONS = {
     "Gerador de Comunicações": {
         "description": "Crie e-mails, relatórios e comunicados profissionais",
@@ -415,9 +409,13 @@ FEATURE_OPTIONS = {
     }
 }
 
+# Limites do sistema - mais realistas para evitar problemas de desempenho
+TOKEN_LIMIT = 50000     # Reduzido para evitar sobrecarga
+REQUEST_LIMIT = 30      # Valor mais realista baseado em uso típico
+
 # ================= SESSION STATE INITIALIZATION =================
 
-# Inicialização da sessão otimizada - usando funções auxiliares para organização
+# Inicialização da sessão otimizada - usando funções auxiliares
 def init_session_state():
     """Inicializa todas as variáveis do session_state de uma vez"""
     
@@ -656,8 +654,6 @@ def create_feature_cards():
             st.session_state.current_feature = name
             st.session_state.previous_screen = "home"
             st.rerun()
-    
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # Interface principal do aplicativo - completamente redesenhada
 def main():
@@ -727,7 +723,7 @@ def main():
         create_feature_cards()
         
     else:
-        # Interface da funcionalidade selecionada - completamente redesenhada
+        # Interface da funcionalidade selecionada
         current_feature = st.session_state.current_feature
         feature_details = FEATURE_OPTIONS[current_feature]
         
