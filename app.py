@@ -112,25 +112,6 @@ st.markdown("""
         --text-secondary: #86868B;
     }
 
-    /* Cabeçalho gradiente mais amplo e vibrante */
-    .header-gradient {
-        background: linear-gradient(90deg, 
-                                  #6247AA 0%, 
-                                  #9747FF 15%, 
-                                  #FF6D2A 40%, 
-                                  #FF9E43 60%, 
-                                  #00C1D5 80%, 
-                                  #01E2FF 100%);
-        padding: 1.5rem 2rem;
-        color: white;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        height: 90px;
-    }
     
     /* Reset e estilos gerais */
     * {
@@ -434,12 +415,23 @@ if 'previous_screen' not in st.session_state:
 # ================= HELPER FUNCTIONS =================
 
 def header():
-    """Renderiza o cabeçalho com gradiente amplo e faz o título clicável para voltar à página inicial"""
+    """Renderiza o cabeçalho com gradiente amplo e completo"""
     
-    # Renderizamos o cabeçalho com gradiente maior
+    # Criar um header gradiente de largura total
     st.markdown("""
-    <div class="header-gradient" style="display: flex; align-items: center; justify-content: space-between; 
-                                        height: 80px; margin-bottom: 20px; padding: 0 20px;">
+    <div style="
+        background: linear-gradient(90deg, #6247AA 0%, #9747FF 15%, #FF6D2A 40%, #FF9E43 60%, #00C1D5 80%, #01E2FF 100%);
+        padding: 1.5rem 2rem;
+        color: white;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        height: 90px;
+        width: 100%;
+    ">
         <h1 style="margin: 0; font-weight: 600; font-size: 42px; color: white;">NEXUS</h1>
         <div style="display: flex; align-items: center; gap: 8px;">
             <div style="width: 10px; height: 10px; border-radius: 50%; background: #28C840;"></div>
@@ -448,27 +440,25 @@ def header():
     </div>
     """, unsafe_allow_html=True)
     
-    # Adicionamos um botão invisível para retornar à página inicial quando não estamos nela
+    # Adicionar funcionalidade de botão quando não estiver na página inicial
     if st.session_state.current_feature:
-        # Posicionamos o botão sobre o título para torná-lo clicável
+        # Colocar um botão transparente sobre o título
         st.markdown("""
         <style>
-            .nexus-button {
-                position: absolute;
-                top: 20px;
-                left: 20px;
-                width: 150px;
-                height: 50px;
-                background: transparent;
-                z-index: 999;
-                cursor: pointer;
-            }
+        .title-button-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 90px;
+            z-index: 999;
+            cursor: pointer;
+        }
         </style>
-        <div class="nexus-button"></div>
         """, unsafe_allow_html=True)
         
-        # Botão invisível para capturar cliques
-        if st.button("", key="nexus_home_button", help="Voltar à página inicial"):
+        # Criar uma área clicável invisível
+        if st.button("Voltar para início", key="home_button_invisible", help="Voltar à página inicial"):
             st.session_state.current_feature = ""
             st.experimental_rerun()
 
