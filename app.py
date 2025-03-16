@@ -1711,7 +1711,7 @@ def load_scenarios_from_github():
         "J10.json": "comunicacao_executiva"
     }
     
-    # Base URL para a pasta knowledge_base no GitHub (ajuste para seu usuário)
+    # Base URL para a pasta knowledge_base no GitHub
     base_url = "https://raw.githubusercontent.com/aiagentnexus25/nexus-assistant/main/knowledge_base/"
     
     # Carrega cada arquivo do GitHub
@@ -1787,7 +1787,8 @@ def get_relevant_scenarios(scenarios_data, context, audience=None):
 # Função para enriquecer o prompt com cenários relevantes
 def enrich_prompt_with_scenarios(base_prompt, relevant_scenarios):
     """
-    Enriquecer um prompt existente com informações dos cenários relevantes
+    Enriquecer um prompt existente com informações dos cenários relevantes,
+    adaptando-se a diferentes estruturas de cenários
     """
     if not relevant_scenarios:
         return base_prompt
@@ -1814,17 +1815,57 @@ def enrich_prompt_with_scenarios(base_prompt, relevant_scenarios):
         scenario_type = scenario_data["tipo"]
         
         enhanced_prompt += f"\nCenário {i} ({tipo_legivel.get(scenario_type, scenario_type)}):\n"
-        enhanced_prompt += f"Contexto: {scenario.get('contexto', 'N/A')}\n"
-        enhanced_prompt += f"Nível: {scenario.get('nivel', 'N/A')}\n"
         
+        # Adicionar contexto (verificando diferentes campos possíveis)
+        contexto = scenario.get('contexto', scenario.get('descricao', scenario.get('situacao_contexto', 'N/A')))
+        enhanced_prompt += f"Contexto: {contexto}\n"
+        
+        # Adicionar nível (verificando diferentes campos possíveis)
+        nivel = scenario.get('nivel', scenario.get('complexidade', scenario.get('dificuldade', 'N/A')))
+        enhanced_prompt += f"Nível: {nivel}\n"
+        
+        # Adicionar situação (verificando diferentes estruturas possíveis)
+        situacao = None
         if "dialogo" in scenario and "situacao" in scenario["dialogo"]:
-            enhanced_prompt += f"Situação: {scenario['dialogo']['situacao']}\n"
+            situacao = scenario["dialogo"]["situacao"]
+        elif "situacao" in scenario:
+            situacao = scenario["situacao"]
+        elif "descricao_situacao" in scenario:
+            situacao = scenario["descricao_situacao"]
+            
+        if situacao:
+            enhanced_prompt += f"Situação: {situacao}\n"
         
-        if "analise_emocional" in scenario:
+        # Adicionar estratégias (verificando diferentes estruturas possíveis)
+        estrategias = []
+        
+        # Verifica em analise_emocional
+        if "analise_emocional" in scenario and "tecnicas_recomendadas" in scenario["analise_emocional"]:
+            estrategias = scenario["analise_emocional"]["tecnicas_recomendadas"]
+        
+        # Verifica em recomendacoes
+        elif "recomendacoes" in scenario:
+            if isinstance(scenario["recomendacoes"], list):
+                estrategias = scenario["recomendacoes"]
+            elif isinstance(scenario["recomendacoes"], dict) and "tecnicas" in scenario["recomendacoes"]:
+                estrategias = scenario["recomendacoes"]["tecnicas"]
+        
+        # Verifica em estrategias
+        elif "estrategias" in scenario:
+            if isinstance(scenario["estrategias"], list):
+                estrategias = scenario["estrategias"]
+            elif isinstance(scenario["estrategias"], dict) and "recomendadas" in scenario["estrategias"]:
+                estrategias = scenario["estrategias"]["recomendadas"]
+        
+        # Verifica em melhores_praticas
+        elif "melhores_praticas" in scenario:
+            if isinstance(scenario["melhores_praticas"], list):
+                estrategias = scenario["melhores_praticas"]
+                
+        if estrategias:
             enhanced_prompt += "Estratégias recomendadas:\n"
-            tecnicas = scenario.get("analise_emocional", {}).get("tecnicas_recomendadas", [])
-            for tecnica in tecnicas:
-                enhanced_prompt += f"- {tecnica}\n"
+            for estrategia in estrategias:
+                enhanced_prompt += f"- {estrategia}\n"
                 
         enhanced_prompt += "\n"
     
@@ -1835,7 +1876,8 @@ def enrich_prompt_with_scenarios(base_prompt, relevant_scenarios):
 # Função para mostrar os cenários relevantes na interface
 def display_relevant_scenarios(relevant_scenarios):
     """
-    Exibe os cenários relevantes na interface do usuário
+    Exibe os cenários relevantes na interface do usuário,
+    adaptando-se a diferentes estruturas de cenários
     """
     if not relevant_scenarios:
         return
@@ -1860,12 +1902,35 @@ def display_relevant_scenarios(relevant_scenarios):
             scenario = scenario_data["cenario"]
             scenario_type = scenario_data["tipo"]
             
+            # Extrai contexto e nível com resiliência a diferentes estruturas
+            contexto = scenario.get('contexto', 
+                        scenario.get('descricao', 
+                        scenario.get('situacao_contexto', 'N/A')))
+            
+            nivel = scenario.get('nivel', 
+                    scenario.get('complexidade', 
+                    scenario.get('dificuldade', 'N/A')))
+            
+            # Adiciona um terceiro campo informativo quando disponível
+            extra_info = ""
+            if "dialogo" in scenario and "situacao" in scenario["dialogo"]:
+                extra_info = f"<strong>Situação:</strong> {scenario['dialogo']['situacao'][:100]}..."
+            elif "situacao" in scenario:
+                extra_info = f"<strong>Situação:</strong> {scenario['situacao'][:100]}..."
+            elif "estrategias" in scenario and isinstance(scenario["estrategias"], list) and len(scenario["estrategias"]) > 0:
+                extra_info = f"<strong>Estratégia principal:</strong> {scenario['estrategias'][0]}"
+            elif "melhores_praticas" in scenario and isinstance(scenario["melhores_praticas"], list) and len(scenario["melhores_praticas"]) > 0:
+                extra_info = f"<strong>Melhor prática:</strong> {scenario['melhores_praticas'][0]}"
+            
+            # Adiciona o campo extra se existir
+            extra_html = f"<br>{extra_info}" if extra_info else ""
+            
             st.markdown(f"""
             <div class="scenario-card">
                 <div class="scenario-title">Cenário {i}: {tipo_legivel.get(scenario_type, scenario_type)}</div>
                 <div class="scenario-content">
-                    <strong>Contexto:</strong> {scenario.get('contexto', 'N/A')}<br>
-                    <strong>Nível:</strong> {scenario.get('nivel', 'N/A')}
+                    <strong>Contexto:</strong> {contexto}<br>
+                    <strong>Nível:</strong> {nivel}{extra_html}
                 </div>
             </div>
             """, unsafe_allow_html=True)
