@@ -1689,6 +1689,11 @@ def load_scenarios_from_github():
         "facilitacao_decisoes": {},
         "falhas_comunicacao": {},
         "emocoes_fortes": {}
+        # Novas categorias para J7-J10
+        "comunicacao_intercultural": {},
+        "comunicacao_remota": {},
+        "negociacao_conflito": {},
+        "comunicacao_executiva": {}
     }
     
     # Mapeamento de arquivos e suas chaves correspondentes
@@ -1699,6 +1704,11 @@ def load_scenarios_from_github():
         "J4.json": "facilitacao_decisoes",
         "J5.json": "falhas_comunicacao",
         "J6.json": "emocoes_fortes"
+        # Novos arquivos J7-J10
+        "J7.json": "comunicacao_intercultural",
+        "J8.json": "comunicacao_remota",
+        "J9.json": "negociacao_conflito",
+        "J10.json": "comunicacao_executiva"
     }
     
     # Base URL para a pasta knowledge_base no GitHub (ajuste para seu usuário)
@@ -1790,6 +1800,11 @@ def enrich_prompt_with_scenarios(base_prompt, relevant_scenarios):
         "facilitacao_decisoes": "Facilitação de Decisões",
         "falhas_comunicacao": "Mitigação de Falhas de Comunicação",
         "emocoes_fortes": "Lidar com Emoções Fortes"
+        # Novos tipos para J7-J10
+        "comunicacao_intercultural": "Comunicação Intercultural",
+        "comunicacao_remota": "Comunicação em Equipes Remotas",
+        "negociacao_conflito": "Negociação e Resolução de Conflitos",
+        "comunicacao_executiva": "Comunicação Executiva"
     }
     
     enhanced_prompt = base_prompt + "\n\n--- CENÁRIOS DE REFERÊNCIA ---\n"
@@ -1833,6 +1848,11 @@ def display_relevant_scenarios(relevant_scenarios):
         "facilitacao_decisoes": "Facilitação de Decisões",
         "falhas_comunicacao": "Mitigação de Falhas de Comunicação",
         "emocoes_fortes": "Lidar com Emoções Fortes"
+        # Novos tipos para J7-J10
+        "comunicacao_intercultural": "Comunicação Intercultural",
+        "comunicacao_remota": "Comunicação em Equipes Remotas",
+        "negociacao_conflito": "Negociação e Resolução de Conflitos",
+        "comunicacao_executiva": "Comunicação Executiva"
     }
     
     with st.expander("📖 Cenários de referência relevantes", expanded=False):
