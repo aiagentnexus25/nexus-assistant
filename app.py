@@ -1688,7 +1688,7 @@ def load_scenarios_from_github():
         "comunicacao_mas_noticias": {},
         "facilitacao_decisoes": {},
         "falhas_comunicacao": {},
-        "emocoes_fortes": {}
+        "emocoes_fortes": {},
         # Novas categorias para J7-J10
         "comunicacao_intercultural": {},
         "comunicacao_remota": {},
@@ -1703,7 +1703,7 @@ def load_scenarios_from_github():
         "J3.json": "comunicacao_mas_noticias",
         "J4.json": "facilitacao_decisoes",
         "J5.json": "falhas_comunicacao",
-        "J6.json": "emocoes_fortes"
+        "J6.json": "emocoes_fortes",
         # Novos arquivos J7-J10
         "J7.json": "comunicacao_intercultural",
         "J8.json": "comunicacao_remota",
@@ -1799,7 +1799,7 @@ def enrich_prompt_with_scenarios(base_prompt, relevant_scenarios):
         "comunicacao_mas_noticias": "Comunicação de Más Notícias",
         "facilitacao_decisoes": "Facilitação de Decisões",
         "falhas_comunicacao": "Mitigação de Falhas de Comunicação",
-        "emocoes_fortes": "Lidar com Emoções Fortes"
+        "emocoes_fortes": "Lidar com Emoções Fortes",
         # Novos tipos para J7-J10
         "comunicacao_intercultural": "Comunicação Intercultural",
         "comunicacao_remota": "Comunicação em Equipes Remotas",
@@ -1847,7 +1847,7 @@ def display_relevant_scenarios(relevant_scenarios):
         "comunicacao_mas_noticias": "Comunicação de Más Notícias",
         "facilitacao_decisoes": "Facilitação de Decisões",
         "falhas_comunicacao": "Mitigação de Falhas de Comunicação",
-        "emocoes_fortes": "Lidar com Emoções Fortes"
+        "emocoes_fortes": "Lidar com Emoções Fortes",
         # Novos tipos para J7-J10
         "comunicacao_intercultural": "Comunicação Intercultural",
         "comunicacao_remota": "Comunicação em Equipes Remotas",
