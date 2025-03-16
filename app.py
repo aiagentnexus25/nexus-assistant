@@ -1681,6 +1681,7 @@ def load_scenarios_from_github():
     """
     Carrega os arquivos JSON de cenários do GitHub.
     Retorna um dicionário com os cenários organizados por categoria.
+    Versão robusta que lida melhor com erros.
     """
     scenarios_data = {
         "negociacao_escopo": {},
@@ -1714,19 +1715,46 @@ def load_scenarios_from_github():
     # Base URL para a pasta knowledge_base no GitHub
     base_url = "https://raw.githubusercontent.com/aiagentnexus25/nexus-assistant/main/knowledge_base/"
     
+    # Armazenar arquivos carregados com sucesso
+    successful_loads = 0
+    
     # Carrega cada arquivo do GitHub
     for file_name, key in files_map.items():
         try:
             file_url = base_url + file_name
-            response = requests.get(file_url)
+            response = requests.get(file_url, timeout=10)  # Timeout adicionado
             response.raise_for_status()  # Verifica se a requisição foi bem-sucedida
             
-            scenarios_data[key] = json.loads(response.text)
-            print(f"✅ {file_name} carregado com sucesso!")
+            # Tenta carregar o JSON
+            json_data = json.loads(response.text)
+            
+            # Verifica se os dados têm o formato esperado
+            if isinstance(json_data, dict) or isinstance(json_data, list):
+                scenarios_data[key] = json_data
+                successful_loads += 1
+                print(f"✅ {file_name} carregado com sucesso!")
+            else:
+                print(f"⚠️ {file_name} não contém dados no formato esperado.")
         except requests.RequestException as e:
             print(f"⚠️ Não foi possível carregar {file_name} do GitHub. {str(e)}")
         except json.JSONDecodeError:
             print(f"❌ Erro ao decodificar {file_name}. Verifique o formato do arquivo.")
+        except Exception as e:
+            print(f"❌ Erro inesperado ao carregar {file_name}: {str(e)}")
+    
+    # Se nenhum arquivo foi carregado com sucesso, adicionar dados de fallback
+    if successful_loads == 0:
+        print("⚠️ Nenhum arquivo de cenário foi carregado. Usando dados de fallback.")
+        # Adicionar pelo menos um cenário de fallback para cada categoria
+        for key in scenarios_data.keys():
+            scenarios_data[key] = {
+                "cenarios": [{
+                    "contexto": "Cenário de fallback - o sistema não conseguiu carregar dados externos",
+                    "nivel": "Básico",
+                    "descricao": "Este é um cenário genérico usado quando não foi possível carregar os dados reais.",
+                    "estrategias": ["Comunicação clara e direta", "Foco em soluções", "Transparência"]
+                }]
+            }
     
     return scenarios_data
 
