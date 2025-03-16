@@ -430,7 +430,7 @@ def load_scenarios_from_github():
     }
     
     # Base URL para a pasta knowledge_base no GitHub (ajuste para seu usuário)
-    base_url = "https://raw.githubusercontent.com/ricardoBrigante/nexus-assistant/main/knowledge_base/"
+    base_url = "https://raw.githubusercontent.com/aiagentnexus25/nexus-assistant/main/knowledge_base/"
     
     # Carrega cada arquivo do GitHub
     for file_name, key in files_map.items():
